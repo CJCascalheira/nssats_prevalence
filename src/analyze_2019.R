@@ -5,6 +5,7 @@ library(table1)
 
 # Import
 ssats_2019 <- read_csv("data/cleaned/ssats_2019.csv")
+mhss_2019 <- read_csv("data/cleaned/mhss_2019.csv")
 
 # PREVALENCE BY STATE -----------------------------------------------------
 
@@ -42,8 +43,8 @@ us_map_lgbt <- us_map %>%
   left_join(lgbt_by_state_1)
 head(us_map_lgbt)
 
-# Map of LGBT programming
-plot_lgbt_2019 <- ggplot(data = us_map_lgbt, aes(x = long, y = lat, group = group, fill = percent)) +
+# Map of LGBT programming at substance use facilities 
+ssats_2019_choropleth <- ggplot(data = us_map_lgbt, aes(x = long, y = lat, group = group, fill = percent)) +
   geom_polygon(color = "white") +
   theme_void() +
   # Set the coordinate orientation
@@ -58,10 +59,51 @@ plot_lgbt_2019 <- ggplot(data = us_map_lgbt, aes(x = long, y = lat, group = grou
     option = "D"
   ) +
   theme(legend.position = "bottom")
-plot_lgbt_2019
+ssats_2019_choropleth
 
 # Save the plot
-ggsave(filename = "data/results/ssats_2019_choropleth.png", plot = plot_lgbt_2019)
+ggsave(filename = "data/results/ssats_2019_choropleth.png", plot = ssats_2019_choropleth)
+
+#######
+
+# Prepare the merged dataframe
+lgbt_map_mhss <- mhss_2019 %>%
+  filter(!is.na(lgbt)) %>%
+  group_by(state) %>%
+  count(lgbt) %>%
+  mutate(
+    # Total facilities by state
+    sum = sum(n),
+    # Percent of LGBT programming
+    percent = n / sum
+  ) %>%
+  select(lgbt, percent, state) %>%
+  ungroup() %>%
+  # Select only the positive cases
+  filter(lgbt == 1) %>%
+  left_join(state_names) %>%
+  left_join(us_map, by = "region")
+
+# Map of LGBT programming at mental health clinics
+mhss_2019_choropleth <- ggplot(data = lgbt_map_mhss, aes(x = long, y = lat, group = group, fill = percent)) +
+  geom_polygon(color = "grey") +
+  theme_void() +
+  # Set the coordinate orientation
+  coord_map("bonne", lat0 = 50) +
+  scale_fill_viridis(
+    name = "Percent of Facilities with LGBTQ+ Programming",
+    guide = guide_colorbar(
+      title.position = "top",
+      barwidth = 17,
+      title.hjust = 0.5
+    ),
+    option = "D"
+  ) +
+  theme(legend.position = "bottom")
+mhss_2019_choropleth
+
+# Save the plot
+ggsave(filename = "data/results/mhss_2019_choropleth.png", plot = mhss_2019_choropleth)
 
 # TABLES: FEATURES OF FACILITIES ------------------------------------------
 
@@ -139,3 +181,29 @@ ssats_2019 %>%
     # Percent of LGBT programming
     percent = n / sum
   )
+
+# SIMPLE CORRELATION ------------------------------------------------------
+
+# Association between LGBTQ-specific programming at substance use vs. mental health facilities
+mhss_2019 %>%
+  filter(!is.na(lgbt)) %>%
+  group_by(state) %>%
+  count(lgbt) %>%
+  mutate(
+    # Total facilities by state
+    sum = sum(n),
+    # Percent of LGBT programming
+    percent = n / sum
+  ) %>%
+  select(lgbt, percent, state) %>%
+  ungroup() %>%
+  # Select only the positive cases
+  filter(lgbt == 1) %>%
+  rename(percent_mhss = percent) %>%
+  left_join(lgbt_by_state_1) %>%
+  rename(percent_ssats = percent) %>%
+  # Plot the relationship between SSATS and MHSS (probably better with counts, not percents?)
+  ggplot(aes(x = percent_ssats, y = percent_mhss)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  theme_bw()
