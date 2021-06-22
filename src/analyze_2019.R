@@ -2,10 +2,12 @@
 library(tidyverse)
 library(viridis)
 library(table1)
+library(scales)
 
 # Import
 ssats_2019 <- read_csv("data/cleaned/ssats_2019.csv")
 mhss_2019 <- read_csv("data/cleaned/mhss_2019.csv")
+equality_table <- read_csv("data/equality_table_clean.csv")
 
 # PREVALENCE BY STATE -----------------------------------------------------
 
@@ -18,7 +20,8 @@ lgbt_by_state <- ssats_2019 %>%
     sum = sum(n),
     # Percent of LGBT programming
     percent = n / sum
-  )
+  ) %>%
+  filter(state != "ZZ")
 lgbt_by_state
 
 # Select only the positive cases
@@ -62,7 +65,7 @@ ssats_2019_choropleth <- ggplot(data = us_map_lgbt, aes(x = long, y = lat, group
 ssats_2019_choropleth
 
 # Save the plot
-ggsave(filename = "data/results/ssats_2019_choropleth.png", plot = ssats_2019_choropleth)
+# ggsave(filename = "data/results/ssats_2019_choropleth.png", plot = ssats_2019_choropleth)
 
 #######
 
@@ -82,7 +85,8 @@ lgbt_map_mhss <- mhss_2019 %>%
   # Select only the positive cases
   filter(lgbt == 1) %>%
   left_join(state_names) %>%
-  left_join(us_map, by = "region")
+  left_join(us_map, by = "region") %>%
+  filter(state != "ZZ")
 
 # Map of LGBT programming at mental health clinics
 mhss_2019_choropleth <- ggplot(data = lgbt_map_mhss, aes(x = long, y = lat, group = group, fill = percent)) +
@@ -103,7 +107,7 @@ mhss_2019_choropleth <- ggplot(data = lgbt_map_mhss, aes(x = long, y = lat, grou
 mhss_2019_choropleth
 
 # Save the plot
-ggsave(filename = "data/results/mhss_2019_choropleth.png", plot = mhss_2019_choropleth)
+# ggsave(filename = "data/results/mhss_2019_choropleth.png", plot = mhss_2019_choropleth)
 
 # TABLES: FEATURES OF FACILITIES ------------------------------------------
 
@@ -182,10 +186,10 @@ ssats_2019 %>%
     percent = n / sum
   )
 
-# SIMPLE CORRELATION ------------------------------------------------------
+# SIMPLE CORRELATION: COMPARE PERCENTAGES ---------------------------------
 
 # Association between LGBTQ-specific programming at substance use vs. mental health facilities
-mhss_2019 %>%
+ssats_mhss_by_state <- mhss_2019 %>%
   filter(!is.na(lgbt)) %>%
   group_by(state) %>%
   count(lgbt) %>%
@@ -202,8 +206,84 @@ mhss_2019 %>%
   rename(percent_mhss = percent) %>%
   left_join(lgbt_by_state_1) %>%
   rename(percent_ssats = percent) %>%
-  # Plot the relationship between SSATS and MHSS (probably better with counts, not percents?)
+  filter(state != "ZZ")
+head(ssats_mhss_by_state)
+
+# Plot the relationship between SSATS and MHSS
+ssats_mhss_by_state_plot <- ssats_mhss_by_state %>%
   ggplot(aes(x = percent_ssats, y = percent_mhss)) +
   geom_point() + 
-  geom_smooth(method = "lm") +
-  theme_bw()
+  geom_smooth(method = "lm", color = "blue") +
+  annotate(x = 0.4, y = 0.1, 
+           label = paste("r = ", round(cor(ssats_mhss_by_state$percent_mhss, ssats_mhss_by_state$percent_ssats), 2)), 
+           geom = "text", size = 5, color = "blue") +
+  theme_bw() +
+  labs(
+    x = "% Substance Use Facilities with LGBTQ+ Programming",
+    y = "% Mental Health Facilities with LGBTQ+ Programming",
+    title = "State-Level Availability of LGBTQ-Specific Behavioral Health Services"
+  )
+ssats_mhss_by_state_plot 
+
+# Save the plot
+# ggsave(filename = "data/results/ssats_mhss_by_state_plot.png", plot = ssats_mhss_by_state_plot)
+
+# SIMPLE CORRELATION: STRUCTURAL STIGMA -----------------------------------
+
+# Prepare equality table
+equality_table_long <- equality_table %>%
+  filter(!is.na(state)) %>%
+  select(state, overall_policy_total) %>%
+  distinct(state, .keep_all = TRUE) %>%
+  left_join(ssats_mhss_by_state) %>%
+  select(-lgbt) %>%
+  gather(key = "facility", value = "percent", -overall_policy_total, -state)
+equality_table_long 
+
+# Calculate correlations
+equality_table_cor <- equality_table_long %>%
+  group_by(facility) %>%
+  summarize(
+    cor = cor(overall_policy_total, percent)
+  )
+equality_table_cor
+
+# Prepare annotated text
+dat_text <- data.frame(
+  label = c(paste("r =", round(equality_table_cor$cor[1], 2)), paste("r =", round(equality_table_cor$cor[2], 2))),
+  facility   = c("Mental Health Facilities", "Substance Use Treatment Facilities")
+)
+dat_text 
+
+# Create a plot
+stigma_facilities_plot <- equality_table_long %>%
+  # Rename facets
+  mutate(
+    facility = recode(facility, "percent_mhss" = "Mental Health Facilities",
+                      "percent_ssats" = "Substance Use Treatment Facilities")
+  ) %>%
+  ggplot(aes(x = overall_policy_total, y = percent)) +
+  geom_point() +
+  facet_wrap(~ facility) +
+  geom_smooth(method = "lm", color = "blue") +
+  theme_bw() +
+  geom_text(
+    data = dat_text,
+    mapping = aes(x = 30, y = 0.1, label = label),
+    color = "blue",
+    size = 5
+  ) +
+  scale_x_continuous(breaks = pretty_breaks(n = 10)) +
+  scale_y_continuous(breaks = pretty_breaks(n = 10)) +
+  labs(
+    x = "Index of Pro-LGBTQ+ Policies\nSource: Movement Advancement Project",
+    y = "% of Behavioral Health Facilities \nwith LGBTQ+ Services",
+    title = "Association Between State-Level Structural Stigma and LGBTQ-Specific Programming"
+  ) +
+  theme(
+    strip.text = element_text(size = 12)
+  )
+stigma_facilities_plot
+
+# Save plot
+# ggsave(filename = "data/results/stigma_facilities_plot.png", plot = stigma_facilities_plot)
