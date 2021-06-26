@@ -7,7 +7,7 @@ library(scales)
 # Import
 ssats_2019 <- read_csv("data/cleaned/ssats_2019.csv")
 mhss_2019 <- read_csv("data/cleaned/mhss_2019.csv")
-equality_table <- read_csv("data/equality_table_clean.csv")
+equality_table <- read_csv("data/equality_tables/equality_table_clean_2019.csv")
 
 # PREVALENCE BY STATE -----------------------------------------------------
 
@@ -276,7 +276,7 @@ stigma_facilities_plot <- equality_table_long %>%
   scale_x_continuous(breaks = pretty_breaks(n = 10)) +
   scale_y_continuous(breaks = pretty_breaks(n = 10)) +
   labs(
-    x = "Index of Pro-LGBTQ+ Policies\nSource: Movement Advancement Project",
+    x = "Index of LGBTQ+ Policies from the Movement Advancement Project",
     y = "% of Behavioral Health Facilities \nwith LGBTQ+ Services",
     title = "Association Between State-Level Structural Stigma and LGBTQ-Specific Programming"
   ) +

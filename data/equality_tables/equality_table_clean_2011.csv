@@ -1,0 +1,52 @@
+region,state,relational_recognition,non_discrimination_employment,non_discrimination_housing,adopt_joint,adopt_2ndparent,adopt_stepparent,schools,hate_crime,identity_docs
+alabama,AL,-1,0,0,0,0,0,-1,0,3
+alaska,AK,-1,0,0,0,0,0,0,0,3
+arizona,AZ,-1,0,0,0,0,0,-1,2,3
+arkansas,AR,-1,0,0,0,0,0,3,0,3
+california,CA,1,3,3,2,2,2,3,3,3
+colorado,CO,1,3,3,0,2,0,3,3,3
+connecticut,CT,2,3,3,2,2,2,3,3,3
+delaware,DE,1,2,2,2,2,2,0,2,3
+district of columbia,NA,2,3,3,2,2,2,3,3,3
+florida,FL,-1,0,0,0,0,0,0,2,3
+georgia,GA,-1,0,0,0,0,0,0,0,3
+hawaii,HI,1,3,3,2,2,2,0,3,3
+idaho,ID,-1,0,0,0,0,0,0,0,-1
+illinois,IL,1,3,3,2,2,2,3,2,3
+indiana,IN,-1,0,0,2,2,0,0,0,3
+iowa,IA,2,3,3,2,2,2,3,2,3
+kansas,KS,-1,0,0,0,0,0,0,2,3
+kentucky,KY,-1,0,0,0,-1,0,0,2,3
+louisiana,LA,-1,0,0,-1,0,0,0,2,3
+maine,ME,1,3,3,2,2,0,3,2,3
+maryland,MD,1,2,2,0,0,0,3,3,3
+massachusetts,MA,2,2,2,2,2,2,2,2,3
+michigan,MI,-1,0,0,-1,0,0,0,0,3
+minnesota,MN,-1,3,3,0,0,0,3,3,3
+mississippi,MS,-1,0,0,-1,0,0,-1,0,3
+missouri,MO,-1,0,0,0,0,0,0,3,3
+montana,MT,-1,0,0,0,0,0,0,0,3
+nebraska,NE,-1,0,0,0,-1,0,0,2,3
+nevada,NV,1,3,3,2,2,2,0,2,3
+new hampshire,NH,2,2,2,2,2,2,3,2,3
+new jersey,NJ,2,3,3,2,2,2,3,3,3
+new mexico,NM,2,3,3,0,0,0,0,3,3
+new york,NY,2,2,2,2,2,2,3,2,3
+north carolina,NC,-1,0,0,-1,-1,0,3,0,3
+north dakota,ND,-1,0,0,0,0,0,0,0,3
+ohio,OH,-1,0,0,0,-1,0,0,0,-1
+oklahoma,OK,-1,0,0,0,0,0,-1,0,3
+oregon,OR,1,3,3,2,2,2,3,3,3
+pennsylvania,PA,-1,0,0,0,2,0,0,0,3
+rhode island,RI,2,3,3,2,2,2,0,2,3
+south carolina,SC,-1,0,0,0,0,0,-1,0,3
+south dakota,SD,-1,0,0,0,0,0,0,0,3
+tennessee,TN,-1,0,0,0,0,0,0,2,-1
+texas,TX,-1,0,0,0,0,0,-1,2,3
+utah,UT,-1,0,0,-1,-1,0,-1,0,3
+vermont,VT,2,3,3,2,2,2,3,3,3
+virginia,VA,-1,0,0,0,0,0,0,0,3
+washington,WA,1,3,3,2,2,2,3,3,3
+west virginia,WV,-1,0,0,0,0,0,0,0,3
+wisconsin,WI,1,2,2,0,-1,0,2,2,3
+wyoming,WY,-1,0,0,0,0,0,0,0,3

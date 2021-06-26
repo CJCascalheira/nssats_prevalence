@@ -2,9 +2,9 @@
 library(tidyverse)
 
 # Import
-load("data/NSSATS_2019.RData")
+load("data/nssats/NSSATS_2019.RData")
 nssats_2019 <- PUF
-load("data/NMHSS_2019.RData")
+load("data/nmhss/NMHSS_2019.RData")
 nmhss_2019 <- PUF
 
 # CLEAN N-SSATS -----------------------------------------------------------

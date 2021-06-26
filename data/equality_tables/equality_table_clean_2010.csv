@@ -1,0 +1,52 @@
+region,state,hate_crime,non_discrimination,relational_recognition,parenting,schools,identity_docs
+alabama,AL,0,0,-1,2,-1,0
+alaska,AK,0,0,-1,2,2,0
+arizona,AZ,2,0,-1,0,1,2
+arkansas,AR,0,0,-1,-1,2,3
+california,CA,2,2,2,2,2,2
+colorado,CO,3,3,-1,2,2,3
+connecticut,CT,2,2,2,2,2,0
+delaware,DE,2,2,-1,2,0,3
+district of columbia,NA,2,2,2,2,2,0
+florida,FL,2,0,-1,-1,2,0
+georgia,GA,0,0,-1,0,1,2
+hawaii,HI,3,2,1,2,0,3
+idaho,ID,0,0,-1,0,0,0
+illinois,IL,2,3,-1,2,3,3
+indiana,IN,0,0,-1,2,0,2
+iowa,IA,2,3,2,2,3,3
+kansas,KS,2,0,-1,0,0,0
+kentucky,KY,2,0,-1,-1,0,3
+louisiana,LA,2,0,-1,2,2,2
+maine,ME,2,3,2,2,3,3
+maryland,MD,2,2,-1,2,2,2
+massachusetts,MA,2,2,2,2,2,0
+michigan,MI,0,0,-1,-1,0,2
+minnesota,MN,3,3,-1,2,3,0
+mississippi,MS,0,0,-1,-1,-1,0
+missouri,MO,3,0,-1,0,0,0
+montana,MT,0,0,-1,0,0,0
+nebraska,NE,2,0,-1,-1,0,3
+nevada,NV,2,2,1,2,2,2
+new hampshire,NH,2,2,2,2,2,3
+new jersey,NJ,2,2,2,2,2,2
+new mexico,NM,3,3,0,2,0,3
+new york,NY,2,2,0,2,0,2
+north carolina,NC,0,0,-1,2,0,3
+north dakota,ND,0,0,-1,-1,0,0
+ohio,OH,0,0,-1,-1,0,0
+oklahoma,OK,0,0,-1,0,1,0
+oregon,OR,3,3,1,2,3,0
+pennsylvania,PA,0,0,-1,2,2,2
+rhode island,RI,2,3,2,2,2,0
+south carolina,SC,0,0,-1,0,-1,0
+south dakota,SD,0,0,-1,0,0,0
+tennessee,TN,2,0,-1,0,2,0
+texas,TX,2,0,-1,2,1,3
+utah,UT,0,0,-1,-1,1,0
+vermont,VT,3,3,2,2,3,0
+virginia,VA,0,0,-1,0,2,2
+washington,WA,3,3,1,2,2,0
+west virginia,WV,0,0,-1,2,2,2
+wisconsin,WI,2,2,-1,-1,2,3
+wyoming,WY,0,0,-1,0,0,0
