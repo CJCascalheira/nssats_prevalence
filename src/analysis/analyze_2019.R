@@ -278,7 +278,7 @@ stigma_facilities_plot <- equality_table_long %>%
   labs(
     x = "Index of LGBTQ+ Policies from the Movement Advancement Project",
     y = "% of Behavioral Health Facilities \nwith LGBTQ+ Services",
-    title = "Association Between State-Level Structural Stigma and LGBTQ-Specific Programming"
+    title = "Association Between State-Level Structural Stigma and \nLGBTQ-Specific Programming"
   ) +
   theme(
     strip.text = element_text(size = 12)
