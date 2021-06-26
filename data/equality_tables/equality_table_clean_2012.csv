@@ -1,0 +1,52 @@
+region,state,relational_recognition,adopt_joint,adopt_2ndparent,adopt_stepparent,foster_care,parental_recognition,de_facto_parenting,non_discrimination_employment,non_discrimination_housing,schools,hate_crime,identity_docs,medical_decisions,medical_leave
+alabama,AL,-1,0,0,0,0,0,0,0,0,-1,0,0,-1,0
+alaska,AK,-1,0,0,0,0,0,0,0,0,0,0,0,-1,0
+arizona,AZ,-1,0,0,0,0,0,2,0,0,-1,2,3,0,0
+arkansas,AR,-1,0,0,0,0,0,0,0,0,3,0,3,-1,0
+california,CA,1,2,2,2,2,2,0,3,3,3,3,3,2,2
+colorado,CO,1,0,2,0,0,0,2,3,3,3,3,3,2,0
+connecticut,CT,2,2,2,2,2,2,2,3,3,3,3,0,2,2
+delaware,DE,1,2,2,2,0,2,2,2,2,0,2,3,2,0
+district of columbia,NA,2,2,2,2,0,2,2,3,3,3,3,0,2,2
+florida,FL,-1,0,0,0,0,0,0,0,0,0,2,0,0,0
+georgia,GA,-1,0,0,0,0,0,0,0,0,0,0,3,-1,0
+hawaii,HI,1,2,2,2,0,2,0,3,3,0,3,3,2,2
+idaho,ID,-1,0,0,0,0,0,0,0,0,0,0,-1,0,0
+illinois,IL,1,2,2,2,0,2,0,3,3,3,2,3,2,0
+indiana,IN,-1,2,2,0,0,0,2,0,0,0,0,3,-1,0
+iowa,IA,2,2,2,2,0,0,0,3,3,3,2,3,2,2
+kansas,KS,-1,0,0,0,0,0,0,0,0,0,2,0,-1,0
+kentucky,KY,-1,0,-1,0,0,0,2,0,0,0,2,3,0,0
+louisiana,LA,-1,-1,0,0,0,0,0,0,0,0,2,3,-1,0
+maine,ME,1,2,2,0,0,0,2,3,3,3,2,0,2,2
+maryland,MD,1,0,0,0,0,0,0,2,2,3,3,3,2,0
+massachusetts,MA,2,2,2,2,2,2,0,3,3,2,3,0,2,2
+michigan,MI,-1,-1,0,0,0,0,0,0,0,0,0,3,-1,0
+minnesota,MN,-1,0,0,0,0,0,2,3,3,3,3,0,-1,0
+mississippi,MS,-1,-1,0,0,0,0,0,0,0,-1,0,0,0,0
+missouri,MO,-1,0,0,0,0,0,0,0,0,0,3,0,-1,0
+montana,MT,-1,0,0,0,0,0,2,0,0,0,0,0,-1,0
+nebraska,NE,-1,0,-1,0,-1,0,0,0,0,0,2,3,-1,0
+nevada,NV,1,2,2,2,0,2,2,3,3,0,2,3,2,0
+new hampshire,NH,2,2,2,2,0,2,0,2,2,3,2,3,2,2
+new jersey,NJ,2,2,2,2,2,2,0,3,3,3,3,3,2,2
+new mexico,NM,2,0,0,0,0,2,0,3,3,0,3,3,2,0
+new york,NY,2,2,2,2,2,2,0,2,2,3,2,3,2,0
+north carolina,NC,-1,-1,-1,0,0,0,0,0,0,3,0,3,-1,0
+north dakota,ND,-1,0,0,0,0,0,0,0,0,0,0,0,0,0
+ohio,OH,-1,0,-1,0,0,0,0,0,0,0,0,-1,-1,0
+oklahoma,OK,-1,0,0,0,0,0,0,0,0,-1,0,0,-1,0
+oregon,OR,1,2,2,2,2,2,2,3,3,3,3,0,2,2
+pennsylvania,PA,-1,0,2,0,0,0,0,0,0,0,0,3,0,0
+rhode island,RI,2,2,2,2,2,2,0,3,3,0,2,0,2,2
+south carolina,SC,-1,0,0,0,0,0,2,0,0,-1,0,0,-1,0
+south dakota,SD,-1,0,0,0,0,0,0,0,0,0,0,0,0,0
+tennessee,TN,-1,0,0,0,0,0,0,0,0,0,2,-1,0,0
+texas,TX,-1,0,0,0,0,0,2,0,0,-1,2,3,-1,0
+utah,UT,-1,-1,-1,0,-1,0,0,0,0,-1,0,0,0,0
+vermont,VT,2,2,2,2,0,2,0,3,3,3,3,0,2,2
+virginia,VA,-1,0,0,0,0,0,0,0,0,0,0,3,-1,0
+washington,WA,1,2,2,2,0,2,2,3,3,3,3,3,2,2
+west virginia,WV,-1,0,0,0,0,0,0,0,0,0,0,0,0,0
+wisconsin,WI,1,0,-1,0,2,0,0,2,2,2,2,3,0,2
+wyoming,WY,-1,0,0,0,0,0,0,0,0,0,0,0,0,0
