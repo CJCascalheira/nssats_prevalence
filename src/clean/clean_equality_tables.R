@@ -15,23 +15,6 @@ for (i in 1:length(eq_tables)) {
   assign(paste("eq_table", table_num, sep = "_"), this_table)
 }
 
-# TRANSFORMATION FUNCTION -------------------------------------------------
-
-# Cohen et al. (1999) and Moeller (2015)
-pomp <- function(df) {
-  # Calculate the numerator
-  numerator <- (df - min(df))
-  
-  # Calculate the denominator
-  denominator <- (max(df) - min(df))
-  
-  # Get the POMP values
-  pomp_values <- (numerator / denominator) * 100
-  
-  # Return the POMP values
-  return(pomp_values)
-}
-
 # TOTAL POLICY SCORES -----------------------------------------------------
 
 # 2021
@@ -126,6 +109,26 @@ eq_table_2010a <- eq_table_2010 %>%
   ungroup() %>%
   mutate(year = rep(2010, nrow(.)))
 
+# TRANSFORMATION FUNCTION -------------------------------------------------
+
+# Cohen et al. (1999), Moeller (2015), Little (2013)
+pomp <- function(df) {
+  # Theoretical maximum (MAP, 2020)
+  map_max_2020 <- 38.5
+  
+  # Calculate the numerator
+  numerator <- (df - min(df))
+  
+  # Calculate the denominator
+  denominator <- (map_max_2020 - min(df))
+  
+  # Get the POMP values
+  pomp_values <- (numerator / denominator) * 100
+  
+  # Return the POMP values
+  return(pomp_values)
+}
+
 # APPLY TRANSFORMATION ----------------------------------------------------
 
 # Violates the DRY principle, but works for now!
@@ -162,3 +165,23 @@ eq_table_all <- eq_table_2010a %>%
 eq_table_all %>%
   ggplot(aes(x = year, y = overall_policy_total, color = region)) +
   geom_line()
+
+# SAVE DATA ---------------------------------------------------------------
+
+# List of dataframes
+df_list <- list(eq_table_2010a, eq_table_2011a, eq_table_2012a, eq_table_2013a, eq_table_2014a, eq_table_2015a, eq_table_2016a, eq_table_2017a, eq_table_2018a, eq_table_2019a, eq_table_2020a, eq_table_2021a)
+
+# Vector of variables in WD
+my_vars <- ls()
+
+# Get names
+df_list_names <- my_vars[str_detect(my_vars, regex("a$"))]
+
+# Name the list elements
+names(df_list) <- df_list_names
+
+# Save files
+for (i in 1:length(df_list)) {
+  write_csv(df_list[[i]], 
+            file = paste0("data/equality_tables/transformed/", names(df_list[i]), ".csv"))
+}

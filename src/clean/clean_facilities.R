@@ -1,13 +1,44 @@
 # Dependencies
 library(tidyverse)
 
-# Import
+# Import N-SSATS
+nssats_2020 <- read_delim("data/nssats/NSSATS_2020.txt", delim = " ", col_names = FALSE) %>%
+  select("X1", "X10")
 load("data/nssats/NSSATS_2019.RData")
 nssats_2019 <- PUF
+
+# Import N-MHSS
 load("data/nmhss/NMHSS_2019.RData")
 nmhss_2019 <- PUF
 
+# Data frame of state names and abbreviations
+state_names <- data.frame(region = tolower(state.name))
+state_names$state <- state.abb[match(state_names$region, tolower(state.name))]
+head(state_names)
+
 # CLEAN N-SSATS -----------------------------------------------------------
+
+#* N-SSATS 2020 -----------------------------------------------------------
+
+# Vector of names
+names_2020 <- c("region", "lgbtq_total")
+
+# Rename
+names(nssats_2020) <- names_2020
+
+# Clean N-SSATS 2020
+nssats_2020a <- nssats_2020 %>%
+  mutate(
+    # Removed underscore
+    region = str_replace(region, "_", " "),
+    # Transform to lower case
+    region = tolower(region)
+  ) %>%
+  right_join(state_names, by = "region") %>%
+  select(region, state, lgbtq_total)
+nssats_2020a
+
+#* N-SSATS 2019 -----------------------------------------------------------
 
 # Clean N-SSATS 2019
 ssats_2019 <- nssats_2019 %>%
@@ -33,6 +64,16 @@ ssats_2019 <- nssats_2019 %>%
   )
 ssats_2019
 
+# Transform 
+nssats_2019a <- ssats_2019 %>%
+  select(state, lgbt) %>%
+  count(state, lgbt) %>%
+  filter(lgbt == 1) %>%
+  select(state, lgbtq_total = n) %>%
+  right_join(state_names, by = "state") %>%
+  select(region, everything())
+nssats_2019a
+
 # CLEAN N-MHSS ------------------------------------------------------------
 
 # Clean N-MHSS 2019
@@ -44,8 +85,8 @@ mhss_2019 <- nmhss_2019 %>%
 
 # SAVE TO FILE ------------------------------------------------------------
 
-# N-SSATS 2019
+# For original descriptive stats
 write_csv(ssats_2019, file = "data/cleaned/ssats_2019.csv")
-
-# N-MHSS 2019
 write_csv(mhss_2019, file = "data/cleaned/mhss_2019.csv")
+
+# Save new files for structural stigma analysis
