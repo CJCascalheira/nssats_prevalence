@@ -1,51 +1,51 @@
-region,state,lgbtq_total
-alabama,AL,26
-alaska,AK,12
-arizona,AZ,127
-arkansas,AR,34
-california,CA,582
-colorado,CO,101
-connecticut,CT,59
-delaware,DE,12
-florida,FL,213
-georgia,GA,89
-hawaii,HI,28
-idaho,ID,25
-illinois,IL,141
-indiana,IN,61
-iowa,IA,24
-kansas,KS,28
-kentucky,KY,91
-louisiana,LA,42
-maine,ME,34
-maryland,MD,128
-massachusetts,MA,120
-michigan,MI,107
-minnesota,MN,81
-mississippi,MS,22
-missouri,MO,35
-montana,MT,22
-nebraska,NE,19
-nevada,NV,44
-new hampshire,NH,33
-new jersey,NJ,131
-new mexico,NM,58
-new york,NY,230
-north carolina,NC,185
-north dakota,ND,4
-ohio,OH,114
-oklahoma,OK,55
-oregon,OR,51
-pennsylvania,PA,133
-rhode island,RI,14
-south carolina,SC,14
-south dakota,SD,9
-tennessee,TN,60
-texas,TX,125
-utah,UT,117
-vermont,VT,6
-virginia,VA,49
-washington,WA,69
-west virginia,WV,27
-wisconsin,WI,42
-wyoming,WY,17
+region,state,lgbtq_total,lgbtq_perc,govt_fund
+alabama,AL,26,16.7741935483871,64.5
+alaska,AK,12,11.428571428571429,74.3
+arizona,AZ,127,28.41163310961969,46.8
+arkansas,AR,34,19.883040935672515,56.1
+california,CA,582,33.56401384083045,44.7
+colorado,CO,101,25.699745547073793,54.7
+connecticut,CT,59,28.095238095238095,71
+delaware,DE,12,24.489795918367346,38.8
+florida,FL,213,29.91573033707865,41.4
+georgia,GA,89,25.57471264367816,35.1
+hawaii,HI,28,17.391304347826086,85.7
+idaho,ID,25,22.727272727272727,42.7
+illinois,IL,141,19.775596072931275,53.3
+indiana,IN,61,14.663461538461538,55
+iowa,IA,24,12.972972972972974,58.9
+kansas,KS,28,16.470588235294116,61.2
+kentucky,KY,91,19.07756813417191,41.9
+louisiana,LA,42,27.09677419354839,53.5
+maine,ME,34,17.346938775510203,49
+maryland,MD,128,29.629629629629626,22.5
+massachusetts,MA,120,27.27272727272727,58.4
+michigan,MI,107,23.516483516483515,62.4
+minnesota,MN,81,20.199501246882793,43.4
+mississippi,MS,22,20.952380952380953,65.7
+missouri,MO,35,12.589928057553957,76.3
+montana,MT,22,17.05426356589147,65.9
+nebraska,NE,19,15.447154471544716,71.5
+nevada,NV,44,40.36697247706422,51.4
+new hampshire,NH,33,30.275229357798167,37.6
+new jersey,NJ,131,34.20365535248042,47.3
+new mexico,NM,58,35.80246913580247,61.7
+new york,NY,230,25.727069351230426,54.1
+north carolina,NC,185,30.27823240589198,37.3
+north dakota,ND,4,4.597701149425287,47.1
+ohio,OH,114,18.416801292407108,60.3
+oklahoma,OK,55,28.205128205128204,71.8
+oregon,OR,51,20.647773279352226,55.1
+pennsylvania,PA,133,22.019867549668874,52.6
+rhode island,RI,14,22.22222222222222,57.1
+south carolina,SC,14,11.29032258064516,61.3
+south dakota,SD,9,15.517241379310345,81
+tennessee,TN,60,19.292604501607716,65
+texas,TX,125,24.557956777996072,50.9
+utah,UT,117,35.13513513513514,33.6
+vermont,VT,6,11.538461538461538,73.1
+virginia,VA,49,19.67871485943775,49.4
+washington,WA,69,15.098468271334792,48.8
+west virginia,WV,27,21.428571428571427,55.6
+wisconsin,WI,42,14.237288135593221,44.4
+wyoming,WY,17,28.333333333333332,76.7

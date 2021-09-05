@@ -3,7 +3,8 @@ library(tidyverse)
 
 # Import N-SSATS
 nssats_2020 <- read_delim("data/nssats/NSSATS_2020.txt", delim = " ", col_names = FALSE) %>%
-  select("X1", "X10")
+  select("X1", "X2", "X10")
+nssats_2020_funding <- read_csv("data/nssats/NSSATS_2020_funding.csv")
 
 # 2019
 load("data/nssats/NSSATS_2019.RData")
@@ -12,25 +13,25 @@ nssats_2019 <- PUF
 # 2018
 load("data/nssats/nssats-puf-2018-R.RData")
 nssats_2018 <- mySASData %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2017
 load("data/nssats/nssatspuf_2017.RData")
 nssats_2017 <- nssatspuf_2017 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2016
 load("data/nssats/nssatspuf_2016.Rda")
 nssats_2016 <- n16 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2015
 load("data/nssats/N-SSATS-2015-DS0001-data-r.rda")
 nssats_2015 <- nssats2015_puf %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2014
@@ -42,25 +43,25 @@ nssats_2014 <- nssatpuf_2014 %>%
 # 2013
 load("data/nssats/N-SSATS-2013-DS0001-data-r.rda")
 nssats_2013 <- nssatpuf_2013 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2012
 load("data/nssats/N-SSATS-2012-DS0001-data-r.rda")
 nssats_2012 <- nssatpuf_2012 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2011
 load("data/nssats/N-SSATS-2011-DS0001-data-r.rda")
 nssats_2011 <- nssatpuf_2011 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # 2010
 load("data/nssats/N-SSATS-2010-DS0001-data-r.rda")
 nssats_2010 <- nssatpuf_2010 %>%
-  select(STATE, SRVC62) %>%
+  select(STATE, SRVC62, EARMARK) %>%
   as_tibble()
 
 # Clean up environment
@@ -84,10 +85,24 @@ head(state_names)
 #* N-SSATS 2020 -----------------------------------------------------------
 
 # Vector of names
-names_2020 <- c("region", "lgbtq_total")
+names_2020 <- c("region", "n_facility", "lgbtq_total")
 
 # Rename
 names(nssats_2020) <- names_2020
+
+# Prepare funding
+nssats_2020_funding_1 <- nssats_2020_funding %>%
+  mutate(
+    state = if_else(str_detect(data, regex("[a-zA-Z]")), 1, 0)
+  ) %>%
+  filter(state == 1) %>%
+  select(region = data)
+
+nssats_2020_funding_2 <- nssats_2020_funding[seq(4, nrow(nssats_2020_funding), 4), ] %>%
+  rename(govt_fund = data) %>%
+  bind_cols(nssats_2020_funding_1) %>%
+  filter(row_number() != 52) %>%
+  mutate(region = tolower(region))
 
 # Clean N-SSATS 2020
 nssats_2020a <- nssats_2020 %>%
@@ -95,10 +110,13 @@ nssats_2020a <- nssats_2020 %>%
     # Removed underscore
     region = str_replace(region, "_", " "),
     # Transform to lower case
-    region = tolower(region)
+    region = tolower(region),
+    lgbtq_perc = (lgbtq_total / n_facility) * 100
   ) %>%
   right_join(state_names, by = "region") %>%
-  select(region, state, lgbtq_total)
+  left_join(nssats_2020_funding_2, by = "region") %>%
+  mutate(govt_fund = as.numeric(govt_fund)) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2020a
 
 #* N-SSATS 2019 -----------------------------------------------------------
@@ -106,7 +124,8 @@ nssats_2020a
 # Clean N-SSATS 2019
 ssats_2019 <- nssats_2019 %>%
   # Rename most variables for easy identification
-  rename(id = CASEID, state = STATE, lgbt = SRVC62, owner = OWNERSHP, sliding_fee = FEESCALE,
+  rename(id = CASEID, state = STATE, lgbt = SRVC62, govt = EARMARK, owner = OWNERSHP, 
+         sliding_fee = FEESCALE,
          pay_no_low = PAYASST, pay_cash = REVCHK1, pay_private_ins = REVCHK2, pay_free = REVCHK3, 
          pay_medicaid = REVCHK5, pay_medicare = REVCHK8, pay_state_ins = REVCHK10, 
          pay_military_ins = REVCHK15, pay_itu = REVCHK17, accredited = ACCRED,
@@ -117,7 +136,7 @@ ssats_2019 <- nssats_2019 %>%
          num_ancillary = ANCILLARY, num_psychopharm = PHARMACOTHERAPIES, residential = CTYPE7,
          outpatient = CTYPE1) %>%
   # Select relevant variables
-  select(id, state, lgbt, owner, sliding_fee, accredited, residential, outpatient,
+  select(id, state, lgbt, govt, owner, sliding_fee, accredited, residential, outpatient,
          starts_with("supp_"), starts_with("num")) %>%
   # Recode values
   mutate(
@@ -127,33 +146,70 @@ ssats_2019 <- nssats_2019 %>%
   )
 ssats_2019
 
-# Transform 
-nssats_2019a <- ssats_2019 %>%
-  select(state, lgbt) %>%
+# Prepare totals - state
+ssats_2019_state <- ssats_2019 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+ssats_2019_lgbtq <- ssats_2019 %>%
   count(state, lgbt) %>%
   filter(lgbt == 1) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+ssats_2019_govt <- ssats_2019 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2019a <- ssats_2019_state %>%
+  left_join(ssats_2019_lgbtq) %>%
+  left_join(ssats_2019_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, everything())
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2019a
 
 #* N-SSATS 2018 -----------------------------------------------------------
 
 # Vector of names
-names_nssats <- c("region", "lgbtq")
+names_nssats <- c("state", "lgbtq", "govt")
 
 # Rename
 names(nssats_2018) <- names_nssats
 
-# Clean N-SSATS 2018
-nssats_2018a <- nssats_2018 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2018_state <- nssats_2018 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2018_lgbtq <- nssats_2018 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2018_govt <- nssats_2018 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2018a <- nssats_2018_state %>%
+  left_join(nssats_2018_lgbtq) %>%
+  left_join(nssats_2018_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2018a
 
 #* N-SSATS 2017 -----------------------------------------------------------
@@ -161,15 +217,33 @@ nssats_2018a
 # Rename
 names(nssats_2017) <- names_nssats
 
-# Clean N-SSATS 2017
-nssats_2017a <- nssats_2017 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2017_state <- nssats_2017 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2017_lgbtq <- nssats_2017 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2017_govt <- nssats_2017 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2017a <- nssats_2017_state %>%
+  left_join(nssats_2017_lgbtq) %>%
+  left_join(nssats_2017_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2017a
 
 #* N-SSATS 2016 -----------------------------------------------------------
@@ -177,15 +251,33 @@ nssats_2017a
 # Rename
 names(nssats_2016) <- names_nssats
 
-# Clean N-SSATS 2016
-nssats_2016a <- nssats_2016 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2016_state <- nssats_2016 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2016_lgbtq <- nssats_2016 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2016_govt <- nssats_2016 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2016a <- nssats_2016_state %>%
+  left_join(nssats_2016_lgbtq) %>%
+  left_join(nssats_2016_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2016a
 
 #* N-SSATS 2015 -----------------------------------------------------------
@@ -193,35 +285,63 @@ nssats_2016a
 # Rename
 names(nssats_2015) <- names_nssats
 
-# Clean N-SSATS 2015
-nssats_2015a <- nssats_2015 %>%
-  rename(state = region) %>%
-  mutate(
-    state = str_trim(state),
-    lgbtq = if_else(lgbtq == "No", 0, 1)
-  ) %>%
-  filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+# Prepare totals - state
+nssats_2015_state <- nssats_2015 %>%
+  mutate(state = str_trim(state)) %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2015_lgbtq <- nssats_2015 %>%
+  mutate(state = str_trim(state)) %>%
+  count(state, lgbtq) %>%
+  filter(lgbtq == "Yes") %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2015_govt <- nssats_2015 %>%
+  mutate(state = str_trim(state)) %>%
+  count(state, govt) %>%
+  filter(govt == "Yes") %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2015a <- nssats_2015_state %>%
+  left_join(nssats_2015_lgbtq) %>%
+  left_join(nssats_2015_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2015a
 
 #* N-SSATS 2014 -----------------------------------------------------------
 
 # Rename
-names(nssats_2014) <- names_nssats
+names(nssats_2014) <- c("state", "lgbtq")
 
-# Clean N-SSATS 2014
-nssats_2014a <- nssats_2014 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2014_state <- nssats_2014 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2014_lgbtq <- nssats_2014 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Transform 
+nssats_2014a <- nssats_2014_state %>%
+  left_join(nssats_2014_lgbtq) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = rep(NA_character_, nrow(.))
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2014a
 
 #* N-SSATS 2013 -----------------------------------------------------------
@@ -229,15 +349,33 @@ nssats_2014a
 # Rename
 names(nssats_2013) <- names_nssats
 
-# Clean N-SSATS 2013
-nssats_2013a <- nssats_2013 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2013_state <- nssats_2013 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2013_lgbtq <- nssats_2013 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2013_govt <- nssats_2013 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2013a <- nssats_2013_state %>%
+  left_join(nssats_2013_lgbtq) %>%
+  left_join(nssats_2013_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2013a
 
 #* N-SSATS 2012 -----------------------------------------------------------
@@ -245,15 +383,33 @@ nssats_2013a
 # Rename
 names(nssats_2012) <- names_nssats
 
-# Clean N-SSATS 2012
-nssats_2012a <- nssats_2012 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2012_state <- nssats_2012 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2012_lgbtq <- nssats_2012 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2012_govt <- nssats_2012 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2012a <- nssats_2012_state %>%
+  left_join(nssats_2012_lgbtq) %>%
+  left_join(nssats_2012_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2012a
 
 #* N-SSATS 2011 -----------------------------------------------------------
@@ -261,15 +417,35 @@ nssats_2012a
 # Rename
 names(nssats_2011) <- names_nssats
 
-# Clean N-SSATS 2011
-nssats_2011a <- nssats_2011 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2011_state <- nssats_2011 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2011_lgbtq <- nssats_2011 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2011_govt <- nssats_2011 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2011a <- nssats_2011_state %>%
+  left_join(nssats_2011_lgbtq) %>%
+  left_join(nssats_2011_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    # Replace the missing value - AR has no LGBTQ programming
+    lgbtq_total = if_else(is.na(lgbtq_total), 0, as.double(lgbtq_total)), 
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2011a
 
 #* N-SSATS 2010 -----------------------------------------------------------
@@ -277,15 +453,33 @@ nssats_2011a
 # Rename
 names(nssats_2010) <- names_nssats
 
-# Clean N-SSATS 2010
-nssats_2010a <- nssats_2010 %>%
-  rename(state = region) %>%
+# Prepare totals - state
+nssats_2010_state <- nssats_2010 %>%
+  count(state)
+
+# Prepare totals - lgbtq
+nssats_2010_lgbtq <- nssats_2010 %>%
+  count(state, lgbtq) %>%
   filter(lgbtq == 1) %>%
-  group_by(state) %>%
-  count(lgbtq) %>%
-  select(state, lgbtq_total = n) %>%
+  select(state, lgbtq_total = n)
+
+# Prepare totals - govt funding
+nssats_2010_govt <- nssats_2010 %>%
+  count(state, govt) %>%
+  filter(govt == 1) %>%
+  select(state, govt_total = n)
+
+# Transform 
+nssats_2010a <- nssats_2010_state %>%
+  left_join(nssats_2010_lgbtq) %>%
+  left_join(nssats_2010_govt) %>%
   right_join(state_names, by = "state") %>%
-  select(region, state, lgbtq_total)
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
+  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
 nssats_2010a
 
 # CLEAN N-MHSS ------------------------------------------------------------
