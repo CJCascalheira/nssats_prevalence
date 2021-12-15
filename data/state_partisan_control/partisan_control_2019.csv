@@ -1,0 +1,51 @@
+region,state,control
+alabama,AL,1
+alaska,AK,1
+arizona,AZ,1
+arkansas,AR,1
+california,CA,0
+colorado,CO,0
+connecticut,CT,0
+delaware,DE,0
+florida,FL,1
+georgia,GA,1
+hawaii,HI,0
+idaho,ID,1
+illinois,IL,0
+indiana,IN,1
+iowa,IA,1
+kansas,KS,0
+kentucky,KY,1
+louisiana,LA,0
+maine,ME,0
+maryland,MD,0
+massachusetts,MA,0
+michigan,MI,0
+minnesota,MN,0
+mississippi,MS,1
+missouri,MO,1
+montana,MT,0
+nebraska,NE,0
+nevada,NV,0
+new hampshire,NH,0
+new jersey,NJ,0
+new mexico,NM,0
+new york,NY,0
+north carolina,NC,0
+north dakota,ND,1
+ohio,OH,1
+oklahoma,OK,1
+oregon,OR,0
+pennsylvania,PA,0
+rhode island,RI,0
+south carolina,SC,1
+south dakota,SD,1
+tennessee,TN,1
+texas,TX,1
+utah,UT,1
+vermont,VT,0
+virginia,VA,0
+washington,WA,0
+west virginia,WV,1
+wisconsin,WI,0
+wyoming,WY,1

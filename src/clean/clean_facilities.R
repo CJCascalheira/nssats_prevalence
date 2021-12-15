@@ -1,7 +1,16 @@
 # Dependencies
 library(tidyverse)
 
-# Import N-SSATS
+# IMPORT ------------------------------------------------------------------
+
+# Data frame of state names and abbreviations
+state_names <- data.frame(region = tolower(state.name))
+state_names$state <- state.abb[match(state_names$region, tolower(state.name))]
+head(state_names)
+
+#* IMPORT N-SSATS ---------------------------------------------------------
+
+# 2020
 nssats_2020 <- read_delim("data/nssats/NSSATS_2020.txt", delim = " ", col_names = FALSE) %>%
   select("X1", "X2", "X10")
 nssats_2020_funding <- read_csv("data/nssats/NSSATS_2020_funding.csv")
@@ -68,17 +77,46 @@ nssats_2010 <- nssatpuf_2010 %>%
 rm(PUF, mySASData, nssatspuf_2017, n16, nssats2015_puf, nssatpuf_2014,
    nssatpuf_2013, nssatpuf_2012, nssatpuf_2011, nssatpuf_2010)
 
-# Import N-MHSS
+#* IMPORT N-MHSS ----------------------------------------------------------
+
+# 2019
 load("data/nmhss/NMHSS_2019.RData")
-nmhss_2019 <- PUF
+nmhss_2019 <- PUF %>%
+  select(CASEID, LST, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
+
+# 2018
+load("data/nmhss/nhmss_puf_2018_r.Rdata")
+nmhss_2018 <- nm18 %>%
+  select(LST, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
+
+# 2017
+load("data/nmhss/nmhss_puf_2017.Rdata")
+nmhss_2017 <- nmhsspuf_2017 %>%
+  select(lst, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
+
+# 2016
+load("data/nmhss/nmhss_puf_2016.Rdata")
+nmhss_2016 <- nmhsspuf_2016 %>%
+  select(LST, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
+
+# 2015
+load("data/nmhss/mh2015_puf.Rda")
+nmhss_2015 <- mh2015_puf %>%
+  select(LST, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
+
+# 2014
+load("data/nmhss/mh2014_puf.Rda")
+nmhss_2014 <- mh2014_puf %>%
+  select(lst, SRVC62, FUNDOTHSTATE, FUNDLOCALGOV, FUNDSMHA, FUNDSTATEWELFARE, 
+         FUNDSTATEJUV, FUNDSTATEEDUC)
 
 # Clean up environment
-rm(PUF)
-
-# Data frame of state names and abbreviations
-state_names <- data.frame(region = tolower(state.name))
-state_names$state <- state.abb[match(state_names$region, tolower(state.name))]
-head(state_names)
+rm(PUF, nm18, nmhsspuf_2017, nmhsspuf_2016, mh2015_puf, mh2014_puf)
 
 # CLEAN N-SSATS -----------------------------------------------------------
 
@@ -493,6 +531,172 @@ mhss_2019 <- nmhss_2019 %>%
   # Select relevant variables
   select(id, state, lgbt, everything())
 
+# Prepare totals - lgbtq
+nmhss_2019_lgbtq <- nmhss_2019 %>%
+  count(LST, SRVC62) %>%
+  filter(SRVC62 == 1) %>%
+  select(state = LST, lgbtq_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2019_govt <- nmhss_2019 %>%
+  select(LST, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(LST, govt) %>%
+  select(state = LST, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2019a <- left_join(nmhss_2019_lgbtq, nmhss_2019_govt) %>%
+  select(state = region, everything())
+nmhss_2019a
+
+#* N-MHSS 2018 ------------------------------------------------------------
+
+# Prepare totals - lgbtq
+nmhss_2018_lgbtq <- nmhss_2018 %>%
+  count(LST, SRVC62) %>%
+  filter(SRVC62 == 1) %>%
+  select(state = LST, lgbtq_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2018_govt <- nmhss_2018 %>%
+  select(LST, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(LST, govt) %>%
+  select(state = LST, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2018a <- left_join(nmhss_2018_lgbtq, nmhss_2018_govt) %>%
+  select(state = region, everything())
+nmhss_2018a
+
+#* N-MHSS 2017 ------------------------------------------------------------
+
+# Prepare totals - lgbtq
+nmhss_2017_lgbtq <- nmhss_2017 %>%
+  count(lst, SRVC62) %>%
+  filter(SRVC62 == 1) %>%
+  select(state = lst, lgbtq_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2017_govt <- nmhss_2017 %>%
+  select(lst, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(lst, govt) %>%
+  select(state = lst, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2017a <- left_join(nmhss_2017_lgbtq, nmhss_2017_govt) %>%
+  select(state = region, everything())
+nmhss_2017a
+
+#* N-MHSS 2016 ------------------------------------------------------------
+
+# Prepare totals - lgbtq
+nmhss_2016_lgbtq <- nmhss_2016 %>%
+  count(LST, SRVC62) %>%
+  filter(SRVC62 == 1) %>%
+  select(state = LST, lgbtq_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2016_govt <- nmhss_2016 %>%
+  select(LST, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(LST, govt) %>%
+  select(state = LST, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2016a <- left_join(nmhss_2016_lgbtq, nmhss_2016_govt) %>%
+  select(state = region, everything())
+nmhss_2016a
+
+#* N-MHSS 2015 ------------------------------------------------------------
+
+# Prepare totals - lgbtq
+nmhss_2015_lgbtq <- nmhss_2015 %>%
+  count(LST, SRVC62) %>%
+  filter(SRVC62 == "Yes") %>%
+  select(state = LST, lgbtq_total = n) %>%
+  as_tibble() %>%
+  mutate(state = str_trim(state)) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2015_govt <- nmhss_2015 %>%
+  select(LST, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  mutate(across(FUNDOTHSTATE:FUNDSTATEEDUC, ~recode(., "No" = 0, "Yes" = 1, 
+                                                    "Don't Know" = 2))) %>%
+  as_tibble() %>%
+  mutate(LST = str_trim(LST)) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(LST, govt) %>%
+  select(state = LST, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2015a <- left_join(nmhss_2015_lgbtq, nmhss_2015_govt) %>%
+  select(state = region, everything())
+nmhss_2015a
+
+#* N-MHSS 2014 ------------------------------------------------------------
+
+# Prepare totals - lgbtq
+nmhss_2014_lgbtq <- nmhss_2014 %>%
+  count(lst, SRVC62) %>%
+  filter(SRVC62 == "Yes") %>%
+  as_tibble() %>%
+  mutate(lst = str_trim(lst)) %>%
+  select(state = lst, lgbtq_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Prepare totals - govt funding
+nmhss_2014_govt <- nmhss_2014 %>%
+  select(lst, FUNDOTHSTATE:FUNDSTATEEDUC) %>%
+  mutate(across(FUNDOTHSTATE:FUNDSTATEEDUC, ~recode(., "No" = 0, "Yes" = 1, 
+                                                    "Don't Know" = 2))) %>%
+  as_tibble() %>%
+  mutate(lst = str_trim(lst)) %>%
+  unite("funding", FUNDOTHSTATE:FUNDSTATEEDUC, remove = TRUE) %>%
+  mutate(govt = if_else(str_detect(funding, "0_0_0_0_0_0"), 0, 1)) %>%
+  filter(govt == 1) %>%
+  count(lst, govt) %>%
+  select(state = lst, govt_total = n) %>%
+  right_join(state_names) %>%
+  select(-state)
+
+# Combine all data frames
+nmhss_2014a <- left_join(nmhss_2014_lgbtq, nmhss_2014_govt) %>%
+  select(state = region, everything())
+nmhss_2014a
+
 # SAVE TO FILE ------------------------------------------------------------
 
 # For original descriptive stats
@@ -501,13 +705,21 @@ write_csv(mhss_2019, file = "data/cleaned/mhss_2019.csv")
 
 # Save new N-SSATS files for structural stigma analysis
 write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2020a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2019a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2018a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2017a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2016a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2015a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2014a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2013a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2012a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2011a.csv")
-write_csv(nssats_2020a, file = "data/cleaned/nssats/nssats_2010a.csv")
+write_csv(nssats_2019a, file = "data/cleaned/nssats/nssats_2019a.csv")
+write_csv(nssats_2018a, file = "data/cleaned/nssats/nssats_2018a.csv")
+write_csv(nssats_2017a, file = "data/cleaned/nssats/nssats_2017a.csv")
+write_csv(nssats_2016a, file = "data/cleaned/nssats/nssats_2016a.csv")
+write_csv(nssats_2015a, file = "data/cleaned/nssats/nssats_2015a.csv")
+write_csv(nssats_2014a, file = "data/cleaned/nssats/nssats_2014a.csv")
+write_csv(nssats_2013a, file = "data/cleaned/nssats/nssats_2013a.csv")
+write_csv(nssats_2012a, file = "data/cleaned/nssats/nssats_2012a.csv")
+write_csv(nssats_2011a, file = "data/cleaned/nssats/nssats_2011a.csv")
+write_csv(nssats_2010a, file = "data/cleaned/nssats/nssats_2010a.csv")
+
+# Save new N-MHSS files for structural stigma analysis
+write_csv(nmhss_2019a, file = "data/cleaned/nmhss/nmhss_2019a.csv")
+write_csv(nmhss_2018a, file = "data/cleaned/nmhss/nmhss_2018a.csv")
+write_csv(nmhss_2017a, file = "data/cleaned/nmhss/nmhss_2017a.csv")
+write_csv(nmhss_2016a, file = "data/cleaned/nmhss/nmhss_2016a.csv")
+write_csv(nmhss_2015a, file = "data/cleaned/nmhss/nmhss_2015a.csv")
+write_csv(nmhss_2014a, file = "data/cleaned/nmhss/nmhss_2014a.csv")

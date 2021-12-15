@@ -49,7 +49,7 @@ pop_table_2019 <- table_2019[-1, ] %>%
     lgbtq_pop_total = str_remove(lgbtq_pop_total, ","),
     # Convert to numeric
     lgbtq_pop_perc = as.numeric(lgbtq_pop_perc),
-    lgbtq_pop_total = as.numeric(lgbtq_pop_total),
+    lgbtq_pop_total = as.numeric(lgbtq_pop_total) / 1000,
     # Prepare the merging column
     region = tolower(region),
     # Add year
@@ -79,7 +79,7 @@ pop_table_2020 <- table_2020[-1, ] %>%
     lgbtq_pop_total = str_remove(lgbtq_pop_total, ","),
     # Convert to numeric
     lgbtq_pop_perc = as.numeric(lgbtq_pop_perc),
-    lgbtq_pop_total = as.numeric(lgbtq_pop_total),
+    lgbtq_pop_total = as.numeric(lgbtq_pop_total) / 1000,
     # Prepare the merging column
     region = tolower(region),
     # Add year
@@ -109,7 +109,7 @@ pop_table_2021 <- table_2021[-1, ] %>%
     lgbtq_pop_total = str_remove(lgbtq_pop_total, ","),
     # Convert to numeric
     lgbtq_pop_perc = as.numeric(lgbtq_pop_perc),
-    lgbtq_pop_total = as.numeric(lgbtq_pop_total),
+    lgbtq_pop_total = as.numeric(lgbtq_pop_total) / 1000,
     # Prepare the merging column
     region = tolower(region),
     # Add year
