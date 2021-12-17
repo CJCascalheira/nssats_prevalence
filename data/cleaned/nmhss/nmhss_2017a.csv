@@ -1,51 +1,51 @@
-state,lgbtq_total,govt_total
-alaska,14,80
-alabama,19,155
-arkansas,20,164
-arizona,71,308
-california,171,712
-colorado,21,167
-connecticut,56,182
-delaware,12,30
-florida,75,381
-georgia,42,170
-hawaii,8,31
-iowa,11,136
-idaho,26,124
-illinois,26,318
-indiana,34,256
-kansas,13,112
-kentucky,31,183
-louisiana,25,108
-massachusetts,68,245
-maryland,57,201
-maine,16,169
-michigan,53,287
-minnesota,27,194
-missouri,14,188
-mississippi,24,144
-montana,11,84
-north carolina,43,209
-north dakota,4,25
-nebraska,19,129
-new hampshire,21,50
-new jersey,57,242
-new mexico,12,50
-nevada,8,39
-new york,153,668
-ohio,96,487
-oklahoma,32,118
-oregon,26,142
-pennsylvania,81,472
-rhode island,9,47
-south carolina,19,93
-south dakota,2,47
-tennessee,26,248
-texas,47,287
-utah,16,122
-virginia,34,250
-vermont,20,65
-washington,52,287
-wisconsin,59,347
-west virginia,9,102
-wyoming,6,42
+state,lgbtq_total,govt_fund
+alaska,14,93.02325581395348
+alabama,19,88.57142857142857
+arkansas,20,75.22935779816514
+arizona,71,82.79569892473118
+california,171,82.21709006928405
+colorado,21,90.27027027027027
+connecticut,56,84.25925925925925
+delaware,12,90.9090909090909
+florida,75,81.2366737739872
+georgia,42,85
+hawaii,8,88.57142857142857
+iowa,11,90.66666666666666
+idaho,26,84.93150684931507
+illinois,26,81.74807197943444
+indiana,34,93.0909090909091
+kansas,13,91.05691056910568
+kentucky,31,87.98076923076923
+louisiana,25,61.36363636363637
+massachusetts,68,77.77777777777779
+maryland,57,76.13636363636364
+maine,16,90.86021505376344
+michigan,53,85.16320474777447
+minnesota,27,86.60714285714286
+missouri,14,88.67924528301887
+mississippi,24,83.23699421965318
+montana,11,96.55172413793103
+north carolina,43,81.32295719844358
+north dakota,4,78.125
+nebraska,19,96.99248120300751
+new hampshire,21,79.36507936507937
+new jersey,57,79.08496732026144
+new mexico,12,86.20689655172413
+nevada,8,84.78260869565217
+new york,153,79.24080664294188
+ohio,96,88.38475499092559
+oklahoma,32,82.51748251748252
+oregon,26,91.02564102564102
+pennsylvania,81,82.66199649737302
+rhode island,9,83.92857142857143
+south carolina,19,85.3211009174312
+south dakota,2,92.15686274509804
+tennessee,26,90.51094890510949
+texas,47,84.1642228739003
+utah,16,88.40579710144928
+virginia,34,94.33962264150944
+vermont,20,87.83783783783784
+washington,52,90.53627760252367
+wisconsin,59,82.61904761904762
+west virginia,9,89.47368421052632
+wyoming,6,100

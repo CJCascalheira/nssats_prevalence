@@ -531,6 +531,12 @@ mhss_2019 <- nmhss_2019 %>%
   # Select relevant variables
   select(id, state, lgbt, everything())
 
+# Prepare totals - state
+nmhss_2019_state <- nmhss_2019 %>%
+  count(LST) %>%
+  right_join(state_names, by = c("LST" = "state")) %>%
+  select(-LST)
+
 # Prepare totals - lgbtq
 nmhss_2019_lgbtq <- nmhss_2019 %>%
   count(LST, SRVC62) %>%
@@ -552,10 +558,18 @@ nmhss_2019_govt <- nmhss_2019 %>%
 
 # Combine all data frames
 nmhss_2019a <- left_join(nmhss_2019_lgbtq, nmhss_2019_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2019_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2019a
 
 #* N-MHSS 2018 ------------------------------------------------------------
+
+# Prepare totals - state
+nmhss_2018_state <- nmhss_2018 %>%
+  count(LST) %>%
+  right_join(state_names, by = c("LST" = "state")) %>%
+  select(-LST)
 
 # Prepare totals - lgbtq
 nmhss_2018_lgbtq <- nmhss_2018 %>%
@@ -578,10 +592,18 @@ nmhss_2018_govt <- nmhss_2018 %>%
 
 # Combine all data frames
 nmhss_2018a <- left_join(nmhss_2018_lgbtq, nmhss_2018_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2018_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2018a
 
 #* N-MHSS 2017 ------------------------------------------------------------
+
+# Prepare totals - state
+nmhss_2017_state <- nmhss_2017 %>%
+  count(lst) %>%
+  right_join(state_names, by = c("lst" = "state")) %>%
+  select(-lst)
 
 # Prepare totals - lgbtq
 nmhss_2017_lgbtq <- nmhss_2017 %>%
@@ -604,10 +626,18 @@ nmhss_2017_govt <- nmhss_2017 %>%
 
 # Combine all data frames
 nmhss_2017a <- left_join(nmhss_2017_lgbtq, nmhss_2017_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2017_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2017a
 
 #* N-MHSS 2016 ------------------------------------------------------------
+
+# Prepare totals - state
+nmhss_2016_state <- nmhss_2016 %>%
+  count(LST) %>%
+  right_join(state_names, by = c("LST" = "state")) %>%
+  select(-LST)
 
 # Prepare totals - lgbtq
 nmhss_2016_lgbtq <- nmhss_2016 %>%
@@ -630,10 +660,19 @@ nmhss_2016_govt <- nmhss_2016 %>%
 
 # Combine all data frames
 nmhss_2016a <- left_join(nmhss_2016_lgbtq, nmhss_2016_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2016_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2016a
 
 #* N-MHSS 2015 ------------------------------------------------------------
+
+# Prepare totals - state
+nmhss_2015_state <- nmhss_2015 %>%
+  count(LST) %>%
+  mutate(LST = str_trim(LST)) %>%
+  right_join(state_names, by = c("LST" = "state")) %>%
+  select(-LST)
 
 # Prepare totals - lgbtq
 nmhss_2015_lgbtq <- nmhss_2015 %>%
@@ -662,10 +701,19 @@ nmhss_2015_govt <- nmhss_2015 %>%
 
 # Combine all data frames
 nmhss_2015a <- left_join(nmhss_2015_lgbtq, nmhss_2015_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2015_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2015a
 
 #* N-MHSS 2014 ------------------------------------------------------------
+
+# Prepare totals - state
+nmhss_2014_state <- nmhss_2014 %>%
+  count(lst) %>%
+  mutate(lst = str_trim(lst)) %>%
+  right_join(state_names, by = c("lst" = "state")) %>%
+  select(-lst)
 
 # Prepare totals - lgbtq
 nmhss_2014_lgbtq <- nmhss_2014 %>%
@@ -694,7 +742,9 @@ nmhss_2014_govt <- nmhss_2014 %>%
 
 # Combine all data frames
 nmhss_2014a <- left_join(nmhss_2014_lgbtq, nmhss_2014_govt) %>%
-  select(state = region, everything())
+  left_join(nmhss_2014_state) %>%
+  mutate(govt_fund = (govt_total / n) * 100) %>%
+  select(state = region, everything(), -n, -govt_total)
 nmhss_2014a
 
 # SAVE TO FILE ------------------------------------------------------------

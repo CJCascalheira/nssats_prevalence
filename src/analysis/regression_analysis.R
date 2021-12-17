@@ -166,3 +166,45 @@ model_nssats_aic <- boot(data = cross_section_nssats, statistic = get_aic, R = 5
                     formula = lgbtq_actual ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
                       partisan_state + cong_116_score)
 model_nssats_aic
+
+# BOOTSTRAP REGRESSION: N-MHSS -------------------------------------------
+
+# Model
+model_nmhss <- lm(lgbtq_total ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
+                     partisan_state + cong_116_score, 
+                   data = cross_section_nmhss)
+
+# Bootstrap estimation
+model_nmhss_boot <- Boot(model_nmhss, R = 5000, method = "case")
+
+# Summarize the model
+model_nmhss_sumry <- summary(model_nmhss_boot)
+model_nmhss_sumry
+
+# Confidence intervals for model estimates
+confint(model_nmhss_boot, level = .95, type = "norm")
+
+# Get t-statistics for each coefficient
+model_nmhss_tstat <- data.frame(
+  # Pull the coefficients and the standard errors
+  coeff = model_nmhss_sumry$bootMed, 
+  se = model_nmhss_sumry$bootSE
+) %>%
+  # Calculate the standard t-statistic
+  mutate(t_stat = coeff / se) %>%
+  # Calculate the p-value of the t-statistic
+  mutate(t_p_value = 2 * pt(q = abs(t_stat), df = (nrow(cross_section_nmhss) - 1), lower.tail = FALSE))
+model_nmhss_tstat
+
+# Get R^2
+model_nmhss_r2 <- boot(data = cross_section_nmhss, statistic = rsq_function, R = 5000, 
+                        formula = lgbtq_total ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
+                          partisan_state + cong_116_score)
+model_nmhss_r2
+boot.ci(model_nmhss_r2, type = "bca")
+
+# Get AIC
+model_nmhss_aic <- boot(data = cross_section_nmhss, statistic = get_aic, R = 5000, 
+                         formula = lgbtq_total ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
+                           partisan_state + cong_116_score)
+model_nmhss_aic
