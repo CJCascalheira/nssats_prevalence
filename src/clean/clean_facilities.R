@@ -8,6 +8,10 @@ state_names <- data.frame(region = tolower(state.name))
 state_names$state <- state.abb[match(state_names$region, tolower(state.name))]
 head(state_names)
 
+# Import correction to SGM-tailored programming
+confirmed_sgm <- read_csv("data/cleaned/confirmed_sgm_tailored_programming.csv") %>%
+  select(region, perc_confirmed)
+
 #* IMPORT N-SSATS ---------------------------------------------------------
 
 # 2020
@@ -154,7 +158,14 @@ nssats_2020a <- nssats_2020 %>%
   right_join(state_names, by = "region") %>%
   left_join(nssats_2020_funding_2, by = "region") %>%
   mutate(govt_fund = as.numeric(govt_fund)) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n_facility) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2020a
 
 #* N-SSATS 2019 -----------------------------------------------------------
@@ -210,7 +221,14 @@ nssats_2019a <- ssats_2019_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2019a
 
 #* N-SSATS 2018 -----------------------------------------------------------
@@ -247,7 +265,14 @@ nssats_2018a <- nssats_2018_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2018a
 
 #* N-SSATS 2017 -----------------------------------------------------------
@@ -281,7 +306,14 @@ nssats_2017a <- nssats_2017_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2017a
 
 #* N-SSATS 2016 -----------------------------------------------------------
@@ -315,7 +347,14 @@ nssats_2016a <- nssats_2016_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2016a
 
 #* N-SSATS 2015 -----------------------------------------------------------
@@ -352,7 +391,14 @@ nssats_2015a <- nssats_2015_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2015a
 
 #* N-SSATS 2014 -----------------------------------------------------------
@@ -377,9 +423,17 @@ nssats_2014a <- nssats_2014_state %>%
   # Create percentages
   mutate(
     lgbtq_perc = (lgbtq_total / n) * 100,
-    govt_fund = rep(NA_character_, nrow(.))
+    govt_fund = rep(NA_character_, nrow(.)),
+    govt_total = rep(NA_character_, nrow(.))
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2014a
 
 #* N-SSATS 2013 -----------------------------------------------------------
@@ -413,7 +467,14 @@ nssats_2013a <- nssats_2013_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2013a
 
 #* N-SSATS 2012 -----------------------------------------------------------
@@ -447,7 +508,14 @@ nssats_2012a <- nssats_2012_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2012a
 
 #* N-SSATS 2011 -----------------------------------------------------------
@@ -483,7 +551,14 @@ nssats_2011a <- nssats_2011_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2011a
 
 #* N-SSATS 2010 -----------------------------------------------------------
@@ -517,7 +592,14 @@ nssats_2010a <- nssats_2010_state %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(region, state, lgbtq_total, lgbtq_perc, govt_fund)
+  # Add the correction to SGM-tailored programming
+  left_join(confirmed_sgm) %>%
+  # Calculate the estimate value of actual SGM-tailored programming
+  mutate(
+    lgbtq_actual = lgbtq_total * perc_confirmed,
+    lgbtq_perc_actual = (lgbtq_actual / n) * 100
+  ) %>%
+  select(region, state, everything())
 nssats_2010a
 
 # CLEAN N-MHSS ------------------------------------------------------------
@@ -560,7 +642,7 @@ nmhss_2019_govt <- nmhss_2019 %>%
 nmhss_2019a <- left_join(nmhss_2019_lgbtq, nmhss_2019_govt) %>%
   left_join(nmhss_2019_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2019a
 
 #* N-MHSS 2018 ------------------------------------------------------------
@@ -594,7 +676,7 @@ nmhss_2018_govt <- nmhss_2018 %>%
 nmhss_2018a <- left_join(nmhss_2018_lgbtq, nmhss_2018_govt) %>%
   left_join(nmhss_2018_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2018a
 
 #* N-MHSS 2017 ------------------------------------------------------------
@@ -628,7 +710,7 @@ nmhss_2017_govt <- nmhss_2017 %>%
 nmhss_2017a <- left_join(nmhss_2017_lgbtq, nmhss_2017_govt) %>%
   left_join(nmhss_2017_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2017a
 
 #* N-MHSS 2016 ------------------------------------------------------------
@@ -662,7 +744,7 @@ nmhss_2016_govt <- nmhss_2016 %>%
 nmhss_2016a <- left_join(nmhss_2016_lgbtq, nmhss_2016_govt) %>%
   left_join(nmhss_2016_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2016a
 
 #* N-MHSS 2015 ------------------------------------------------------------
@@ -703,7 +785,7 @@ nmhss_2015_govt <- nmhss_2015 %>%
 nmhss_2015a <- left_join(nmhss_2015_lgbtq, nmhss_2015_govt) %>%
   left_join(nmhss_2015_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2015a
 
 #* N-MHSS 2014 ------------------------------------------------------------
@@ -744,7 +826,7 @@ nmhss_2014_govt <- nmhss_2014 %>%
 nmhss_2014a <- left_join(nmhss_2014_lgbtq, nmhss_2014_govt) %>%
   left_join(nmhss_2014_state) %>%
   mutate(govt_fund = (govt_total / n) * 100) %>%
-  select(state = region, everything(), -n, -govt_total)
+  select(state = region, everything(), -n)
 nmhss_2014a
 
 # SAVE TO FILE ------------------------------------------------------------

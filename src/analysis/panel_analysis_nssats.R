@@ -5,6 +5,7 @@ library(plm)
 library(OrthoPanels)
 library(Amelia)
 library(psych)
+library(viridis)
 
 # IMPORT DATA -------------------------------------------------------------
 
@@ -40,10 +41,6 @@ csv_list1 <- lapply(my_csvs1, read_csv)
 eq_tables <- bind_rows(csv_list1, .id = "column_label") %>%
   select(-column_label)
 
-# Import correction to SGM-tailored programming
-confirmed_sgm <- read_csv("data/cleaned/confirmed_sgm_tailored_programming.csv") %>%
-  select(region, perc_confirmed)
-
 # Merge the two imported data frames
 nssats_eq_a <- left_join(nssats, eq_tables) %>%
   rename(state_policy = overall_policy_total) %>%
@@ -52,14 +49,14 @@ nssats_eq_a <- left_join(nssats, eq_tables) %>%
   mutate(case_state = 1:50) %>%
   ungroup() %>%
   mutate(temp_id = 1:nrow(.)) %>%
-  # Add the correction to SGM-tailored programming
-  left_join(confirmed_sgm) %>%
-  # Calculate the estimate value of actual SGM-tailored programming
-  mutate(
-    lgbtq_actual = lgbtq_total * perc_confirmed
-  ) %>%
-  select(region, case_state, year, everything())
+  select(region, case_state, year, govt_fund, lgbtq_perc, lgbtq_perc_actual, 
+         lgbtq_total, n, everything())
 nssats_eq_a
+
+# Check logical bounds
+nssats_eq_a %>%
+  filter(region == "new hampshire") %>%
+  select(region, case_state, year, govt_fund, lgbtq_perc, lgbtq_perc_actual, lgbtq_total, n)
 
 # MISSING DATA ------------------------------------------------------------
 
@@ -68,8 +65,9 @@ nssats_eq_a
 
 # Need to replace with expectation maximization
 # a_out <- amelia(as.data.frame(nssats_eq_a), m = 5, idvars = c("temp_id", "region"), 
-#                ts = "year", cs = "case_state",
-#                emburn = c(50, 100)
+#             ts = "year", cs = "case_state",
+#             emburn = c(50, 100),
+#             bounds = rbind(c(4, 0, 100), c(5, 0, 100), c(6, 0, 100), c(7, 0, Inf), c(8, 0, Inf))
 # )
 
 # Write to file
@@ -84,17 +82,14 @@ nssats_eq
 gather(nssats_eq, key = "variables", value = "values", -temp_id) %>%
   filter(is.na(values))
 
-# PROOF OF CONCEPT TEST ---------------------------------------------------
+# Check logical bounds
+nssats_eq %>%
+  filter(region == "new hampshire") %>%
+  select(region, case_state, year, govt_fund, lgbtq_perc, lgbtq_perc_actual, n)
 
-# Get data for specific year
-nssats_eq_example <- nssats_eq %>%
-  filter(year == 2020)
-
-# Simple cross-sectional model
-summary(lm(lgbtq_total ~ state_policy, data = nssats_eq_example))
-
-# From a cross-sectional view, some years are associated with LGBTQ+ programming,
-# but some are not. Some years, the prediction is significant.
+nssats_eq %>%
+  select(region, year, govt_total, govt_fund) %>%
+  filter(year == 2014)
 
 # ASSUMPTION CHECKING -----------------------------------------------------
 
@@ -132,36 +127,28 @@ nssats_eq_lags <- nssats_eq %>%
     l6_lgbtq_total = Lag(lgbtq_total, shift = 6),
     l6_state_policy = Lag(state_policy, shift = 6),
     l6_govt_fund = Lag(govt_fund, shift = 6),
+    # Lags for the reported percentage SGM-tailored programming
+    l_lgbtq_perc = Lag(lgbtq_perc, shift = 1),
+    l2_lgbtq_perc = Lag(lgbtq_perc, shift = 2),
+    l3_lgbtq_perc = Lag(lgbtq_perc, shift = 3),
+    l4_lgbtq_perc = Lag(lgbtq_perc, shift = 4),
+    l5_lgbtq_perc = Lag(lgbtq_perc, shift = 5),
+    l6_lgbtq_perc = Lag(lgbtq_perc, shift = 6),
     # Lags for the actual SGM-tailored programming
     l_lgbtq_actual = Lag(lgbtq_actual, shift = 1),
     l2_lgbtq_actual = Lag(lgbtq_actual, shift = 2),
     l3_lgbtq_actual = Lag(lgbtq_actual, shift = 3),
     l4_lgbtq_actual = Lag(lgbtq_actual, shift = 4),
     l5_lgbtq_actual = Lag(lgbtq_actual, shift = 5),
-    l6_lgbtq_actual = Lag(lgbtq_actual, shift = 6)
-  ) %>%
-  # Get first differences
-  mutate(
-    fd_lgbtq_total = lgbtq_total - l_lgbtq_total,
-    fd_state_policy = state_policy - l_state_policy,
-    fd_govt_fund = govt_fund - l_govt_fund,
-    # Lag = 1
-    fd_l_lgbtq_total = l_lgbtq_total - l2_lgbtq_total,
-    fd_l_state_policy = l_state_policy - l2_state_policy,
-    fd_l_govt_fund = l_govt_fund - l2_govt_fund,
-    # Lag = 2
-    fd_l2_lgbtq_total = l2_lgbtq_total - l3_lgbtq_total,
-    fd_l2_state_policy = l2_state_policy - l3_state_policy,
-    fd_l2_govt_fund = l2_govt_fund - l3_govt_fund,
-    # Lag = 3
-    fd_l3_lgbtq_total = l3_lgbtq_total - l4_lgbtq_total,
-    fd_l3_state_policy = l3_state_policy - l4_state_policy,
-    fd_l3_govt_fund = l3_govt_fund - l4_govt_fund,
-    # Lag = 4
-    fd_l4_lgbtq_total = l4_lgbtq_total - l5_lgbtq_total,
-    fd_l4_state_policy = l4_state_policy - l5_state_policy,
-    fd_l4_govt_fund = l4_govt_fund - l5_govt_fund,
-  )
+    l6_lgbtq_actual = Lag(lgbtq_actual, shift = 6),
+    # Lags for the actual percentage of SGM-tailored programming
+    l_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 1),
+    l2_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 2),
+    l3_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 3),
+    l4_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 4),
+    l5_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 5),
+    l6_lgbtq_perc_actual = Lag(lgbtq_perc_actual, shift = 6)
+  ) 
 nssats_eq_lags
 
 # Export to try in StataBE 17
@@ -208,38 +195,50 @@ nssats_eq_lags %>%
   complete.cases() %>%
   sum()
 
-# Balanced panels - visualize
-balanced_df <- nssats_eq_lags %>%
-  select(year, state_policy, govt_fund) %>%
-  mutate(
-    govt_fund = if_else(!is.na(govt_fund), 1, govt_fund),
-    state_policy = if_else(!is.na(state_policy), 1, state_policy)
-  ) 
-
-ggplot(balanced_df, aes(x = govt_fund)) +
-  geom_bar() +
-  facet_wrap(~ year) +
-  scale_x_continuous() +
-  theme_bw() +
-  theme(
-    axis.text.x = element_blank(),
-    axis.ticks = element_blank())
-
 # DESCRIPTIVE STATISTICS BY YEAR ------------------------------------------
+
+# For Table 1
+nssats_eq_lags %>%
+  group_by(year) %>%
+  summarize(
+    lgbtq_perc_m = round(mean(lgbtq_perc), 2),
+    lgbtq_perc_sd = round(sd(lgbtq_perc), 2),
+    lgbtq_perc_actual_m = round(mean(lgbtq_perc_actual), 2),
+    lgbtq_perc_actual_sd = round(sd(lgbtq_perc_actual), 2),
+    state_policy_m = round(mean(state_policy), 2),
+    state_policy_sd = round(sd(state_policy), 2),
+    govt_fund_m = round(mean(govt_fund), 2),
+    govt_fund_sd = round(sd(govt_fund), 2)
+  ) %>%
+  write_csv("data/results/tables/table_1_nssats_descriptives.csv")
 
 # SGM facilities
 nssats_eq_lags %>%
   group_by(year) %>%
   summarize(
-    mean = round(mean(lgbtq_total), 2),
-    sd = round(sd(lgbtq_total), 2),
-    med = round(median(lgbtq_total), 2),
-    min = round(min(lgbtq_total), 2),
-    max = round(max(lgbtq_total), 2),
-    skew = round(skew(lgbtq_total), 2),
-    kurtosis = round(kurtosi(lgbtq_total), 2)
+    mean = round(mean(lgbtq_perc), 2),
+    sd = round(sd(lgbtq_perc), 2),
+    med = round(median(lgbtq_perc), 2),
+    min = round(min(lgbtq_perc), 2),
+    max = round(max(lgbtq_perc), 2),
+    skew = round(skew(lgbtq_perc), 2),
+    kurtosis = round(kurtosi(lgbtq_perc), 2)
   ) %>%
-  write_csv("data/results/tables/lgbtq_total_descriptives.csv")
+  write_csv("data/results/tables/lgbtq_perc_descriptives.csv")
+
+# SGM facilities - corrected
+nssats_eq_lags %>%
+  group_by(year) %>%
+  summarize(
+    mean = round(mean(lgbtq_perc_actual), 2),
+    sd = round(sd(lgbtq_perc_actual), 2),
+    med = round(median(lgbtq_perc_actual), 2),
+    min = round(min(lgbtq_perc_actual), 2),
+    max = round(max(lgbtq_perc_actual), 2),
+    skew = round(skew(lgbtq_perc_actual), 2),
+    kurtosis = round(kurtosi(lgbtq_perc_actual), 2)
+  ) %>%
+  write_csv("data/results/tables/lgbtq_perc_actual_descriptives.csv")
 
 # State policy
 nssats_eq_lags %>%
@@ -272,7 +271,7 @@ nssats_eq_lags %>%
 # ORTHOGONAL REPARAMETERIZATION -------------------------------------------
 
 # Year variable controls for trending
-stigma_opm <- opm(lgbtq_total ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
+stigma_opm <- opm(lgbtq_perc ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
                   # Call the data set
                   data = nssats_eq_lags,
                   # Specify panel data
@@ -286,44 +285,9 @@ stigma_opm <- opm(lgbtq_total ~  state_policy + l_state_policy + govt_fund + l_g
 summary(stigma_opm)
 
 # Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_total"-nssats_eq_lags$"l_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_total"-nssats_eq_lags$"l2_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund")
+opms_e <- (nssats_eq_lags$"lgbtq_perc"-nssats_eq_lags$"l_lgbtq_perc") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_perc"-nssats_eq_lags$"l2_lgbtq_perc") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund")
 
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_total"-nssats_eq_lags$"l3_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_total"-nssats_eq_lags$"l4_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
-
-length(opms_e*opms_e_2)
-
-opms_cov <- sum(opms_e*opms_e_2, na.rm=TRUE)/(length(opms_e*opms_e_2)-sum(is.na(opms_e*opms_e_2)))
-
-opms_var <- sum(opms_e*opms_e, na.rm=TRUE)/(length(opms_e*opms_e)-sum(is.na(opms_e*opms_e)))
-
-ABOND_m2_test <- opms_cov/(opms_var^(1/2))
-
-ABOND_m2_test
-
-2 * pnorm(-abs(ABOND_m2_test))
-
-# Arellano and Bond (1991) m2 statistic is significant, therefore we reject the 
-# null hypothesis of white noise; there is serial correlation in the errors
-
-# Year variable controls for trending
-stigma_opm <- opm(lgbtq_total ~ state_policy + l_state_policy + l2_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + year,
-                  # Call the data set
-                  data = nssats_eq_lags,
-                  # Specify panel data
-                  index = c("region", "year"), 
-                  # Derive posteriors and sample from them; more = more precise, but longer to run
-                  n.samp = 5000, 
-                  # Add time dummies to control for global effects to all cases across time?
-                  add.time.indicators = FALSE)
-
-# Summarize the model
-summary(stigma_opm)
-
-# Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_total"-nssats_eq_lags$"l_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_total"-nssats_eq_lags$"l2_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund")
-
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_total"-nssats_eq_lags$"l3_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_total"-nssats_eq_lags$"l4_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l4_state_policy"-nssats_eq_lags$"l5_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l4_govt_fund"-nssats_eq_lags$"l5_govt_fund")
+opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_perc"-nssats_eq_lags$"l3_lgbtq_perc") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_perc"-nssats_eq_lags$"l4_lgbtq_perc") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
 
 length(opms_e*opms_e_2)
 
@@ -337,87 +301,13 @@ ABOND_m2_test
 
 2 * pnorm(-abs(ABOND_m2_test))
 
-# Arellano and Bond (1991) m2 statistic is significant, therefore we reject the 
-# null hypothesis of white noise; there is serial correlation in the errors
-
-# Year variable controls for trending
-stigma_opm <- opm(lgbtq_total ~ state_policy + l_state_policy + l2_state_policy + l3_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + l3_govt_fund + year,
-                  # Call the data set
-                  data = nssats_eq_lags,
-                  # Specify panel data
-                  index = c("region", "year"), 
-                  # Derive posteriors and sample from them; more = more precise, but longer to run
-                  n.samp = 5000, 
-                  # Add time dummies to control for global effects to all cases across time?
-                  add.time.indicators = FALSE)
-
-# Summarize the model
-summary(stigma_opm)
-
-# Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_total"-nssats_eq_lags$"l_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_total"-nssats_eq_lags$"l2_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund") - median(stigma_opm$samples$beta[,7])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,8])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
-
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_total"-nssats_eq_lags$"l3_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_total"-nssats_eq_lags$"l4_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l4_state_policy"-nssats_eq_lags$"l5_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l5_state_policy"-nssats_eq_lags$"l6_state_policy") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund") - median(stigma_opm$samples$beta[,7])*(nssats_eq_lags$"l4_govt_fund"-nssats_eq_lags$"l5_govt_fund") - median(stigma_opm$samples$beta[,8])*(nssats_eq_lags$"l5_govt_fund"-nssats_eq_lags$"l6_govt_fund")
-
-length(opms_e*opms_e_2)
-
-opms_cov <- sum(opms_e*opms_e_2, na.rm=TRUE)/(length(opms_e*opms_e_2)-sum(is.na(opms_e*opms_e_2)))
-
-opms_var <- sum(opms_e*opms_e, na.rm=TRUE)/(length(opms_e*opms_e)-sum(is.na(opms_e*opms_e)))
-
-ABOND_m2_test <- opms_cov/(opms_var^(1/2))
-
-ABOND_m2_test
-
-2 * pnorm(-abs(ABOND_m2_test))
-
-# At this point, it is clear that adding more lags of the independent variables is not
-# improving the serial correlation; the errors remain serially correlated. Next,
-# I try to take the first difference of the original ALD (1, 1) model.
-
-# Year variable controls for trending
-stigma_opm <- opm(fd_lgbtq_total ~  fd_state_policy + fd_l_state_policy + 
-                    fd_govt_fund + fd_l_govt_fund + t,
-                  # Call the data set
-                  data = nssats_eq_lags,
-                  # Specify panel data
-                  index = c("region", "year"), 
-                  # Derive posteriors and sample from them; more = more precise, but longer to run
-                  n.samp = 5000, 
-                  # Add time dummies to control for global effects to all cases across time?
-                  add.time.indicators = FALSE)
-
-# Summarize the model
-summary(stigma_opm)
-
-# Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"fd_lgbtq_total"-nssats_eq_lags$"fd_l_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"fd_l_lgbtq_total"-nssats_eq_lags$"fd_l2_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"fd_state_policy"-nssats_eq_lags$"fd_l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"fd_l_state_policy"-nssats_eq_lags$"fd_l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"fd_govt_fund"-nssats_eq_lags$"fd_l_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"fd_l_govt_fund"-nssats_eq_lags$"fd_l2_govt_fund")
-
-opms_e_2 <- (nssats_eq_lags$"fd_l2_lgbtq_total"-nssats_eq_lags$"fd_l3_lgbtq_total") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"fd_l3_lgbtq_total"-nssats_eq_lags$"fd_l4_lgbtq_total") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"fd_l2_state_policy"-nssats_eq_lags$"fd_l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"fd_l3_state_policy"-nssats_eq_lags$"fd_l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"fd_l2_govt_fund"-nssats_eq_lags$"fd_l3_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"fd_l3_govt_fund"-nssats_eq_lags$"fd_l4_govt_fund")
-
-length(opms_e*opms_e_2)
-
-opms_cov <- sum(opms_e*opms_e_2, na.rm=TRUE)/(length(opms_e*opms_e_2)-sum(is.na(opms_e*opms_e_2)))
-
-opms_var <- sum(opms_e*opms_e, na.rm=TRUE)/(length(opms_e*opms_e)-sum(is.na(opms_e*opms_e)))
-
-ABOND_m2_test <- opms_cov/(opms_var^(1/2))
-
-ABOND_m2_test
-
-2 * pnorm(-abs(ABOND_m2_test))
-
-# Taking the first difference does not reduce serial autocorrelation---instead, it
-# makes the issue worse.
-
-# Try the omitted variable approach next, but first, see whether inclusion
-# of the corrected SGM-tailored programming counts affect the results
+# Since the Arellano and Bond (1991) m2 statistic is NOT significant, there is 
+# NO evidence of serial correlation. 
 
 # ORTHOGONAL REPARAMETERIZATION: SGM CORRECTED ----------------------------
 
 # Year variable controls for trending
-stigma_opm <- opm(lgbtq_actual ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
+stigma_opm <- opm(lgbtq_perc_actual ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
                   # Call the data set
                   data = nssats_eq_lags,
                   # Specify panel data
@@ -431,44 +321,9 @@ stigma_opm <- opm(lgbtq_actual ~  state_policy + l_state_policy + govt_fund + l_
 summary(stigma_opm)
 
 # Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_actual"-nssats_eq_lags$"l_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_actual"-nssats_eq_lags$"l2_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund")
+opms_e <- (nssats_eq_lags$"lgbtq_perc_actual"-nssats_eq_lags$"l_lgbtq_perc_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_perc_actual"-nssats_eq_lags$"l2_lgbtq_perc_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund")
 
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_actual"-nssats_eq_lags$"l3_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_actual"-nssats_eq_lags$"l4_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
-
-length(opms_e*opms_e_2)
-
-opms_cov <- sum(opms_e*opms_e_2, na.rm=TRUE)/(length(opms_e*opms_e_2)-sum(is.na(opms_e*opms_e_2)))
-
-opms_var <- sum(opms_e*opms_e, na.rm=TRUE)/(length(opms_e*opms_e)-sum(is.na(opms_e*opms_e)))
-
-ABOND_m2_test <- opms_cov/(opms_var^(1/2))
-
-ABOND_m2_test
-
-2 * pnorm(-abs(ABOND_m2_test))
-
-# Since the m2 statistic is significant, there is evidence of serial correlation.
-# Therefore, attempt to apply lags.
-
-# Year variable controls for trending
-stigma_opm <- opm(lgbtq_actual ~ state_policy + l_state_policy + l2_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + year,
-                  # Call the data set
-                  data = nssats_eq_lags,
-                  # Specify panel data
-                  index = c("region", "year"), 
-                  # Derive posteriors and sample from them; more = more precise, but longer to run
-                  n.samp = 5000, 
-                  # Add time dummies to control for global effects to all cases across time?
-                  add.time.indicators = FALSE)
-
-# Summarize the model
-summary(stigma_opm)
-
-# Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_actual"-nssats_eq_lags$"l_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_actual"-nssats_eq_lags$"l2_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund")
-
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_actual"-nssats_eq_lags$"l3_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_actual"-nssats_eq_lags$"l4_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l4_state_policy"-nssats_eq_lags$"l5_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l4_govt_fund"-nssats_eq_lags$"l5_govt_fund")
+opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_perc_actual"-nssats_eq_lags$"l3_lgbtq_perc_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_perc_actual"-nssats_eq_lags$"l4_lgbtq_perc_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
 
 length(opms_e*opms_e_2)
 
@@ -482,47 +337,12 @@ ABOND_m2_test
 
 2 * pnorm(-abs(ABOND_m2_test))
 
-# M2 statistic finally hit the threshold. Check 3 lags to see if improvement.
-
-# Year variable controls for trending
-stigma_opm <- opm(lgbtq_actual ~ state_policy + l_state_policy + l2_state_policy + l3_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + l3_govt_fund + year,
-                  # Call the data set
-                  data = nssats_eq_lags,
-                  # Specify panel data
-                  index = c("region", "year"), 
-                  # Derive posteriors and sample from them; more = more precise, but longer to run
-                  n.samp = 5000, 
-                  # Add time dummies to control for global effects to all cases across time?
-                  add.time.indicators = FALSE)
-
-# Summarize the model
-summary(stigma_opm)
-
-# Arellano and Bond (1991) m2 statistic
-opms_e <- (nssats_eq_lags$"lgbtq_actual"-nssats_eq_lags$"l_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l_lgbtq_actual"-nssats_eq_lags$"l2_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"state_policy"-nssats_eq_lags$"l_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l_state_policy"-nssats_eq_lags$"l2_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"govt_fund"-nssats_eq_lags$"l_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l_govt_fund"-nssats_eq_lags$"l2_govt_fund") - median(stigma_opm$samples$beta[,7])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,8])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund")
-
-opms_e_2 <- (nssats_eq_lags$"l2_lgbtq_actual"-nssats_eq_lags$"l3_lgbtq_actual") - median(stigma_opm$samples$rho)*(nssats_eq_lags$"l3_lgbtq_actual"-nssats_eq_lags$"l4_lgbtq_actual") - median(stigma_opm$samples$beta[,1])*(nssats_eq_lags$"l2_state_policy"-nssats_eq_lags$"l3_state_policy") - median(stigma_opm$samples$beta[,2])*(nssats_eq_lags$"l3_state_policy"-nssats_eq_lags$"l4_state_policy") - median(stigma_opm$samples$beta[,3])*(nssats_eq_lags$"l4_state_policy"-nssats_eq_lags$"l5_state_policy") - median(stigma_opm$samples$beta[,4])*(nssats_eq_lags$"l5_state_policy"-nssats_eq_lags$"l6_state_policy") - median(stigma_opm$samples$beta[,5])*(nssats_eq_lags$"l2_govt_fund"-nssats_eq_lags$"l3_govt_fund") - median(stigma_opm$samples$beta[,6])*(nssats_eq_lags$"l3_govt_fund"-nssats_eq_lags$"l4_govt_fund") - median(stigma_opm$samples$beta[,7])*(nssats_eq_lags$"l4_govt_fund"-nssats_eq_lags$"l5_govt_fund") - median(stigma_opm$samples$beta[,8])*(nssats_eq_lags$"l5_govt_fund"-nssats_eq_lags$"l6_govt_fund")
-
-length(opms_e*opms_e_2)
-
-opms_cov <- sum(opms_e*opms_e_2, na.rm=TRUE)/(length(opms_e*opms_e_2)-sum(is.na(opms_e*opms_e_2)))
-
-opms_var <- sum(opms_e*opms_e, na.rm=TRUE)/(length(opms_e*opms_e)-sum(is.na(opms_e*opms_e)))
-
-ABOND_m2_test <- opms_cov/(opms_var^(1/2))
-
-ABOND_m2_test
-
-2 * pnorm(-abs(ABOND_m2_test))
-
-# No significant improvement, so retain the simpler model (i.e., two lags)
+# Since the m2 statistic is NOT significant, there is NO evidence of serial correlation.
 
 # FINAL MODEL - ORTHOGONAL REPARAMETERIZATION -----------------------------
 
 # Year variable controls for trending
-stigma_opm <- opm(lgbtq_actual ~ state_policy + l_state_policy + l2_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + year,
+stigma_opm <- opm(lgbtq_perc_actual ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
                   # Call the data set
                   data = nssats_eq_lags,
                   # Specify panel data
@@ -540,12 +360,9 @@ quantile(stigma_opm$samples$beta[, 1]/(1 - stigma_opm$samples$rho), probs = c(0.
 quantile(stigma_opm$samples$beta[, 2]/(1 - stigma_opm$samples$rho), probs = c(0.025, 0.5, 0.975))
 quantile(stigma_opm$samples$beta[, 3]/(1 - stigma_opm$samples$rho), probs = c(0.025, 0.5, 0.975))
 quantile(stigma_opm$samples$beta[, 4]/(1 - stigma_opm$samples$rho), probs = c(0.025, 0.5, 0.975))
-quantile(stigma_opm$samples$beta[, 5]/(1 - stigma_opm$samples$rho), probs = c(0.025, 0.5, 0.975))
-quantile(stigma_opm$samples$beta[, 6]/(1 - stigma_opm$samples$rho), probs = c(0.025, 0.5, 0.975))
 
-# Model with report SGM totals
-stigma_opm_1 <- opm(lgbtq_total ~ state_policy + l_state_policy + l2_state_policy + 
-                    govt_fund + l_govt_fund + l2_govt_fund + year,
+# Year variable controls for trending
+stigma_opm_1 <- opm(lgbtq_perc ~  state_policy + l_state_policy + govt_fund + l_govt_fund + t,
                   # Call the data set
                   data = nssats_eq_lags,
                   # Specify panel data
@@ -560,6 +377,8 @@ summary(stigma_opm_1)
 
 # Calculate long-run effects
 quantile(stigma_opm_1$samples$beta[, 1]/(1 - stigma_opm_1$samples$rho), probs = c(0.025, 0.5, 0.975))
+quantile(stigma_opm_1$samples$beta[, 2]/(1 - stigma_opm_1$samples$rho), probs = c(0.025, 0.5, 0.975))
+quantile(stigma_opm_1$samples$beta[, 3]/(1 - stigma_opm_1$samples$rho), probs = c(0.025, 0.5, 0.975))
 
 # OLS fixed-effects model
 
@@ -569,28 +388,29 @@ head(nssats_plm)
 
 # Select the variables of interest
 nssats_plm <- nssats_plm %>%
-  select(lgbtq_actual, l_lgbtq_actual, state_policy, l_state_policy, l2_state_policy,
-         govt_fund, l_govt_fund, l2_govt_fund, year) %>%
+  select(lgbtq_perc_actual, l_lgbtq_perc_actual, state_policy, l_state_policy, 
+         govt_fund, l_govt_fund, year, region) %>%
   as_tibble()
-head(nssats_plm)
+nssats_plm
 
 # Scale all variables to yield standardized coefficients
-nssats_plm_1 <- lapply(nssats_plm[, -9], scale) %>%
+nssats_plm_1 <- lapply(nssats_plm[, -c(7, 8)], base::scale) %>%
   as_tibble() %>%
-  # Add year column back
-  mutate(year = nssats_plm$year)
+  # Add year and region columns back
+  mutate(year = nssats_plm$year, region = nssats_plm$region)
+nssats_plm_1
 
 # Change names
 names(nssats_plm_1) <- names(nssats_plm)
-head(nssats_plm_1)
+nssats_plm_1
 
 # Set the data into panel data
-nssats_plm_1 <- pdata.frame(nssats_eq_lags, index = c("region", "year"))
+nssats_plm_2 <- pdata.frame(nssats_plm_1, index = c("region", "year"))
 
 # Estimate fixed-effects model
-reg_fe <- plm(lgbtq_actual ~ l_lgbtq_actual + state_policy + l_state_policy + l2_state_policy + 
-                govt_fund + l_govt_fund + l2_govt_fund + year,
-                  data = nssats_plm_1, 
+reg_fe <- plm(lgbtq_perc_actual ~ l_lgbtq_perc_actual + state_policy + l_state_policy + 
+                govt_fund + l_govt_fund + year,
+                  data = nssats_plm_2, 
                   model = "within")
 
 summary(reg_fe)
@@ -600,20 +420,48 @@ reg_fe$coefficients[2] / (1 - reg_fe$coefficients[1])
 reg_fe$coefficients[3] / (1 - reg_fe$coefficients[1])
 reg_fe$coefficients[4] / (1 - reg_fe$coefficients[1])
 reg_fe$coefficients[5] / (1 - reg_fe$coefficients[1])
-reg_fe$coefficients[6] / (1 - reg_fe$coefficients[1])
-reg_fe$coefficients[7] / (1 - reg_fe$coefficients[1])
 
 # VISUALIZATION -----------------------------------------------------------
 
-# Correlation visualization
-nssats_eq %>%
-  group_by(year) %>%
-  summarize(
-    cor_lgbtq_state = cor(lgbtq_total, state_policy, use = "pairwise.complete.obs")
-  ) %>%
-  ggplot(aes(x = year, y = cor_lgbtq_state)) +
-  geom_point() +
-  geom_line() +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = .2)) +
-  scale_x_continuous(limits = c(2010, 2020), breaks = seq(2010, 2020, by = 1))
+# Get geospatial data - https://rpubs.com/lokigao/maps
+us_map <- map_data("state")
 
+# Show fonts available
+windowsFonts()
+
+# SGM-tailored programming by state
+nssats_map <- nssats_eq_lags %>% 
+  filter(year %in% c(2010, 2020)) %>%
+  select(region, year, lgbtq_perc_actual) %>% 
+  right_join(us_map, by = "region") %>%
+  filter(!is.na(year))
+nssats_map
+
+# Map of LGBT programming at substance use facilities 
+nssats_choropleth <- ggplot(data = nssats_map, aes(x = long, y = lat, group = group, 
+                                                   fill = lgbtq_perc_actual)) +
+  geom_polygon(color = "white") +
+  theme_void() +
+  # Set the coordinate orientation
+  coord_map("bonne", lat0 = 50) +
+  scale_fill_viridis(
+    name = "% Facilities with SGM-Tailored Programming",
+    guide = guide_colorbar(
+      title.position = "top",
+      barwidth = 17,
+      title.hjust = 0.5
+    ),
+    option = "D"
+  ) +
+  theme(
+    legend.position = "bottom",
+    # Add Times New Roman font
+    text = element_text(family = "serif"),
+    strip.text.x = element_text(size = 16)
+  ) +
+  facet_wrap(~ year)
+nssats_choropleth
+
+# Save the plot
+# ggsave(filename = "data/results/nssats_choropleth.png", plot = nssats_choropleth,
+#        width = 7.22, height = 3.5)
