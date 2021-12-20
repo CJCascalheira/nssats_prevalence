@@ -37,3 +37,7 @@ xtunitroot fisher govt_fund, demean trend pperron lags(1)
 xtunitroot llc lgbtq_perc
 xtunitroot llc state_policy
 xtunitroot llc govt_fund
+
+drop if fd_govt_fund == "NA"
+destring fd_govt_fund, replace
+xtunitroot fisher fd_govt_fund, demean trend pperron lags(1)

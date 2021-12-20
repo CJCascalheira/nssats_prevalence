@@ -641,9 +641,16 @@ nmhss_2019_govt <- nmhss_2019 %>%
 # Combine all data frames
 nmhss_2019a <- left_join(nmhss_2019_lgbtq, nmhss_2019_govt) %>%
   left_join(nmhss_2019_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2019a
+
+# Check for missing data
+sum(complete.cases(nmhss_2019a))
 
 #* N-MHSS 2018 ------------------------------------------------------------
 
@@ -675,9 +682,16 @@ nmhss_2018_govt <- nmhss_2018 %>%
 # Combine all data frames
 nmhss_2018a <- left_join(nmhss_2018_lgbtq, nmhss_2018_govt) %>%
   left_join(nmhss_2018_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2018a
+
+# Check for missing data
+sum(complete.cases(nmhss_2018a))
 
 #* N-MHSS 2017 ------------------------------------------------------------
 
@@ -709,9 +723,16 @@ nmhss_2017_govt <- nmhss_2017 %>%
 # Combine all data frames
 nmhss_2017a <- left_join(nmhss_2017_lgbtq, nmhss_2017_govt) %>%
   left_join(nmhss_2017_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2017a
+
+# Check for missing data
+sum(complete.cases(nmhss_2017a))
 
 #* N-MHSS 2016 ------------------------------------------------------------
 
@@ -743,9 +764,16 @@ nmhss_2016_govt <- nmhss_2016 %>%
 # Combine all data frames
 nmhss_2016a <- left_join(nmhss_2016_lgbtq, nmhss_2016_govt) %>%
   left_join(nmhss_2016_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2016a
+
+# Check for missing data
+sum(complete.cases(nmhss_2016a))
 
 #* N-MHSS 2015 ------------------------------------------------------------
 
@@ -784,9 +812,16 @@ nmhss_2015_govt <- nmhss_2015 %>%
 # Combine all data frames
 nmhss_2015a <- left_join(nmhss_2015_lgbtq, nmhss_2015_govt) %>%
   left_join(nmhss_2015_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2015a
+
+# Check for missing data
+sum(complete.cases(nmhss_2015a))
 
 #* N-MHSS 2014 ------------------------------------------------------------
 
@@ -825,9 +860,16 @@ nmhss_2014_govt <- nmhss_2014 %>%
 # Combine all data frames
 nmhss_2014a <- left_join(nmhss_2014_lgbtq, nmhss_2014_govt) %>%
   left_join(nmhss_2014_state) %>%
-  mutate(govt_fund = (govt_total / n) * 100) %>%
+  # Create percentages
+  mutate(
+    lgbtq_perc = (lgbtq_total / n) * 100,
+    govt_fund = (govt_total / n) * 100
+  ) %>%
   select(state = region, everything(), -n)
 nmhss_2014a
+
+# Check for missing data
+sum(complete.cases(nmhss_2014a))
 
 # SAVE TO FILE ------------------------------------------------------------
 

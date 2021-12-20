@@ -432,7 +432,7 @@ windowsFonts()
 # SGM-tailored programming by state
 nssats_map <- nssats_eq_lags %>% 
   filter(year %in% c(2010, 2020)) %>%
-  select(region, year, lgbtq_perc_actual) %>% 
+  select(region, year, lgbtq_perc_actual, lgbtq_perc) %>% 
   right_join(us_map, by = "region") %>%
   filter(!is.na(year))
 nssats_map
@@ -462,6 +462,34 @@ nssats_choropleth <- ggplot(data = nssats_map, aes(x = long, y = lat, group = gr
   facet_wrap(~ year)
 nssats_choropleth
 
-# Save the plot
+# Map of LGBT programming at substance use facilities 
+nssats_choropleth_reported <- ggplot(data = nssats_map, aes(x = long, y = lat, group = group, 
+                                                   fill = lgbtq_perc)) +
+  geom_polygon(color = "white") +
+  theme_void() +
+  # Set the coordinate orientation
+  coord_map("bonne", lat0 = 50) +
+  scale_fill_viridis(
+    name = "% Facilities with SGM-Tailored Programming",
+    guide = guide_colorbar(
+      title.position = "top",
+      barwidth = 17,
+      title.hjust = 0.5
+    ),
+    option = "D"
+  ) +
+  theme(
+    legend.position = "bottom",
+    # Add Times New Roman font
+    text = element_text(family = "serif"),
+    strip.text.x = element_text(size = 16)
+  ) +
+  facet_wrap(~ year)
+nssats_choropleth_reported
+
+# Save the plots
 # ggsave(filename = "data/results/nssats_choropleth.png", plot = nssats_choropleth,
+#        width = 7.22, height = 3.5)
+
+# ggsave(filename = "data/results/nssats_choropleth_reported.png", plot = nssats_choropleth_reported,
 #        width = 7.22, height = 3.5)

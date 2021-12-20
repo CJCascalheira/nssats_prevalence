@@ -1,7 +1,3 @@
 # Structural Stigma Over Time
 
-Uses the National Survey of Substance Abuse Treatment Services (N-SSATS), from 2010 to 2020, and data from the Movement Advancement Project.
-
-# 2019 N-SSATS & LGBTQ+
-
-Uses the 2019 N-SSATS to estimate the prevalence of LGBTQ+-specific programming at substance use treatment facilities. 
+Uses data from (a) the National Survey of Substance Abuse Treatment Services (N-SSATS), (b) the National Mental Health Services Survey (N-MHSS), and (c) the Movement Advancement Project to examine the longitudinal relationship between sexual and gender minority (SGM) civil rights and SGM-tailored behavioral health programming across the United States.
