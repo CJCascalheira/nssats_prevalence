@@ -58,6 +58,29 @@ nssats_eq_a %>%
   filter(region == "new hampshire") %>%
   select(region, case_state, year, govt_fund, lgbtq_perc, lgbtq_perc_actual, lgbtq_total, n)
 
+# GET AVERAGE PROGRAMS ----------------------------------------------------
+
+# Average number of programs per year
+nssats %>%
+  group_by(year) %>%
+  summarize(
+    sum = sum(n, na.rm = TRUE)) %>%
+  ungroup %>%
+  summarize(
+    avg = mean(sum),
+    sd = sd(sum))
+
+# Average number of programs across years and states
+nssats %>%
+  summarize(mean = mean(n, na.rm = TRUE)) %>%
+  pull(mean)
+
+# Average number of SGM-tailored programs created in the short-term
+281 * .007
+
+# Average number of SGM-tailored programs in the long-term (LRE)
+281 * 0.109
+
 # MISSING DATA ------------------------------------------------------------
 
 # For Amelia, see: https://www.opr.princeton.edu/workshops/Downloads/2018Jan_AmeliaPratt.pdf

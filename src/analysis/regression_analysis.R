@@ -32,11 +32,7 @@ nssats_2019 <- read_csv("data/cleaned/nssats/nssats_2019a.csv")
 
 # Import N-MHSS
 nmhss_2019 <- read_csv("data/cleaned/nmhss/nmhss_2019a.csv") %>%
-  rename(region = state, govt_fund = govt_total)
-
-# Import correction to SGM-tailored programming
-confirmed_sgm <- read_csv("data/cleaned/confirmed_sgm_tailored_programming.csv") %>%
-  select(region, perc_confirmed)
+  rename(region = state)
 
 # Import state partisan control
 partisan_2019 <- read_csv("data/state_partisan_control/partisan_control_2019.csv") %>%
@@ -53,12 +49,6 @@ cross_section_nssats <- nssats_2019 %>%
   left_join(partisan_2019) %>%
   left_join(cong_116_scores, by = c("region" = "state")) %>%
   rename(state_policy = overall_policy_total) %>%
-  # Add the correction to SGM-tailored programming
-  left_join(confirmed_sgm) %>%
-  # Calculate the estimate value of actual SGM-tailored programming
-  mutate(
-    lgbtq_actual = lgbtq_total * perc_confirmed
-  ) %>%
   select(-senate_score, -house_score, -lgbtq_pop_perc, -perc_confirmed, -state) %>%
   select(region, lgbtq_actual, everything())
 cross_section_nssats
@@ -128,7 +118,7 @@ summary(lm(lgbtq_total ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund
 # BOOTSTRAP REGRESSION: N-SSATS -------------------------------------------
 
 # Model
-model_nssats <- lm(lgbtq_actual ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
+model_nssats <- lm(lgbtq_perc_actual ~ state_policy + lgbtq_hate + lgbtq_pop_total + govt_fund +
                      partisan_state + cong_116_score, 
                    data = cross_section_nssats)
 

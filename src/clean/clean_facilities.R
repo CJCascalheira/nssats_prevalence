@@ -165,6 +165,7 @@ nssats_2020a <- nssats_2020 %>%
     lgbtq_actual = lgbtq_total * perc_confirmed,
     lgbtq_perc_actual = (lgbtq_actual / n_facility) * 100
   ) %>%
+  rename(n = n_facility) %>%
   select(region, state, everything())
 nssats_2020a
 
@@ -646,7 +647,7 @@ nmhss_2019a <- left_join(nmhss_2019_lgbtq, nmhss_2019_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2019a
 
 # Check for missing data
@@ -687,7 +688,7 @@ nmhss_2018a <- left_join(nmhss_2018_lgbtq, nmhss_2018_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2018a
 
 # Check for missing data
@@ -728,7 +729,7 @@ nmhss_2017a <- left_join(nmhss_2017_lgbtq, nmhss_2017_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2017a
 
 # Check for missing data
@@ -769,7 +770,7 @@ nmhss_2016a <- left_join(nmhss_2016_lgbtq, nmhss_2016_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2016a
 
 # Check for missing data
@@ -817,7 +818,7 @@ nmhss_2015a <- left_join(nmhss_2015_lgbtq, nmhss_2015_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2015a
 
 # Check for missing data
@@ -865,7 +866,7 @@ nmhss_2014a <- left_join(nmhss_2014_lgbtq, nmhss_2014_govt) %>%
     lgbtq_perc = (lgbtq_total / n) * 100,
     govt_fund = (govt_total / n) * 100
   ) %>%
-  select(state = region, everything(), -n)
+  select(state = region, everything())
 nmhss_2014a
 
 # Check for missing data

@@ -56,6 +56,17 @@ nmhss_eq
 # Any missing data?
 sum(complete.cases(nmhss_eq)) - nrow(nmhss_eq)
 
+# GET AVERAGE -------------------------------------------------------------
+
+# Average number of programs per year
+nmhss %>%
+  group_by(year) %>%
+  summarize(
+    sum = sum(n, na.rm = TRUE)) %>%
+  ungroup %>%
+  summarize(avg = mean(sum),
+            sd = sd(sum))
+
 # ASSUMPTION CHECKING -----------------------------------------------------
 
 # Export to try in StataBE 17
